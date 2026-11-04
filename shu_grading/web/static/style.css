@@ -108,7 +108,8 @@ a { color:var(--blue); }
 .account-avatar { width:44px; height:44px; padding:8px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
 .account-dropdown { display:none; position:absolute; right:0; top:100%; z-index:15; background:white; box-shadow:0 8px 30px #213b5b22; border:1px solid var(--line); border-radius:10px; min-width:180px; padding:8px; }
 .account-menu:hover .account-dropdown,.account-menu:focus-within .account-dropdown,.account-menu.is-open .account-dropdown { display:block; }
-.account-dropdown button { width:100%; text-align:left; border:0; }
+.account-dropdown button { width:100%; text-align:center; border:0; padding:10px 14px; margin:2px 0; border-radius:8px; transition:background-color .16s ease,color .16s ease; }
+.account-dropdown button:hover,.account-dropdown button:focus-visible { background:#eaf1ff; color:var(--blue); }
 .word-count { color:var(--muted); font-size:13px; }
 .essay-title { text-align:center; }
 
@@ -186,13 +187,15 @@ body.viewing-image { overflow:hidden; }
 .paper-toolbar .word-count { flex:1; min-width:180px; font-size:12px; line-height:1.7; }
 .paper-hint { margin:0 0 18px; }
 .task-title-wrap { position:relative; width:fit-content; }
-.task-title-wrap h1 { cursor:help; }
+.task-title-wrap h1 { cursor:pointer; transition:color .18s ease,transform .18s ease; }
+.task-title-wrap:hover h1,.task-title-wrap:focus-within h1 { color:var(--blue); transform:translateY(-2px); }
+@media(prefers-reduced-motion:reduce) { .task-title-wrap h1 { transition:none; transform:none; } }
 .assignment-popover { display:none; position:absolute; z-index:20; left:calc(100% + 28px); top:0; width:clamp(300px,40vw,640px); max-height:45vh; overflow:auto; padding:20px; background:white; border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 36px #213b5b22; }
 .assignment-popover::before { content:''; position:absolute; right:100%; top:0; width:30px; height:100%; }
 .assignment-popover div { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; margin-top:10px; }
 .task-title-wrap:hover .assignment-popover,.task-title-wrap:focus-within .assignment-popover { display:block; }
-.account-dropdown { min-width:230px; padding:12px; }
-.account-profile { padding:12px 10px 18px; border-bottom:1px solid var(--line); margin-bottom:8px; text-align:center; overflow-wrap:anywhere; }
+.account-dropdown { width:190px; min-width:190px; padding:8px; }
+.account-profile { padding:10px 8px 12px; border-bottom:1px solid var(--line); margin-bottom:6px; text-align:center; overflow-wrap:anywhere; }
 .notice-dialog { max-width:440px; padding:28px; box-shadow:0 18px 70px #213b5b33; color:#1b2d48; }
 .notice-dialog h2 { margin-top:0; }
 .notice-message { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; color:var(--muted); }
