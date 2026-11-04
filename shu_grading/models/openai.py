@@ -135,9 +135,13 @@ class OpenAIProvider(ModelProvider):
             ),
         }
 
-        # MiniMax 模型: 关闭 thinking, 避免 <think> 前缀干扰 JSON 解析
-        # (MiniMax-M3 支持 disabled; 仅对 MiniMax 模型生效)
-        if "minimax" in self.model_name.lower():
+        # M3.1-Flash requires adaptive thinking; never inherit M3's opt-out.
+        # Keep other model families on their own defaults.
+        model_id = self.model_name.lower()
+        if model_id == "minimax-m3.1-flash":
+            kwargs["extra_body"] = {"thinking": {"type": "adaptive"}}
+            kwargs["reasoning_effort"] = "medium"
+        elif model_id == "minimax-m3":
             kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
 
         # OpenAI 支持原生 JSON mode
