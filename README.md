@@ -17,15 +17,13 @@ python -m pip install -e .
 python -m shu_grading.backend.admin create-user teacher01
 ```
 
-分别在两个终端运行：
+本地测试只需启动：
 
 ```powershell
 python web_app.py
 ```
 
-```powershell
-python -m shu_grading.backend.worker --concurrency 2
-```
+该命令默认同时启动网页和阅卷服务，已排队的答卷会自动继续处理。服务器拆分部署使用 `python web_app.py --api-only`，并另行启动 `python -m shu_grading.backend.worker --concurrency 2`。
 
 打开 <http://127.0.0.1:8000>，使用管理员分配的账号登录。模型接口与密钥配置在服务器环境变量中。
 

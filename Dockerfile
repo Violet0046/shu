@@ -7,4 +7,4 @@ COPY web_app.py ./
 RUN pip install --no-cache-dir . && useradd --uid 10001 --create-home shu && mkdir -p /data && chown shu:shu /data
 USER shu
 EXPOSE 8000
-CMD ["python", "web_app.py"]
+CMD ["python", "web_app.py", "--api-only"]

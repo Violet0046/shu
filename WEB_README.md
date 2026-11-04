@@ -18,23 +18,27 @@ python -m shu_grading.backend.admin create-user teacher01 --recipient "账号使
 
 也可以加 `--generate`，在本次终端输出随机密码。每位老师使用自己分配的账号。
 
-分别打开两个终端，保持项目目录和数据目录配置一致：
+本地测试启动一个终端即可：
 
 ```powershell
-# 终端一：网页/API
 python web_app.py
 ```
 
+默认同时启动网页和阅卷服务，浏览器打开 http://127.0.0.1:8000。已上传但未处理的答卷会自动继续，无需重新上传。启动时会显示阅卷服务是否已启用；处理时会记录作业领取、完成或失败。
+
+服务器需要独立部署时，在两个终端分别运行：
+
 ```powershell
-# 终端二：独立阅卷工作进程
+python web_app.py --api-only
+```
+
+```powershell
 python -m shu_grading.backend.worker --concurrency 2
 ```
 
-浏览器打开 http://127.0.0.1:8000，使用分配的账号登录。只启动网页时可以登录和上传，但答卷会等待工作进程处理。`/api/health` 返回数据库状态和最近是否有工作进程心跳。
+网页和 worker 必须使用相同的数据目录。设置 `SHU_EMBEDDED_WORKER=0` 也可关闭网页内的阅卷进程；Docker 默认使用独立 worker。`/api/health` 返回数据库状态和近期是否有阅卷进程心跳，页面会在阅卷服务不可用时提示，不再一直无提示地等待。
 
-默认数据位置为 `~/.shu-grading/web/`；也可以给两个进程统一设置 `SHU_WEB_DATA_DIR`。这是数据库及图片的持久目录，不要使用会随部署清空的临时目录。
-
-仅用于便捷开发时，可以设置 `SHU_EMBEDDED_WORKER=1` 把工作循环放在网页进程中；服务器默认关闭，使用独立进程。
+默认数据位置为 `~/.shu-grading/web/`，可统一设置 `SHU_WEB_DATA_DIR`。这是数据库及图片的持久目录，不要使用会随部署清空的临时目录。
 
 ## 模型配置
 

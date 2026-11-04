@@ -43,6 +43,8 @@ class GradingWorker:
         job = self.queue.claim(self.id)
         if not job:
             return False
+        logger.info('领取阅卷作业 %s，题型 %s，第 %s/%s 次尝试，开始调用评分实现',
+                    job['id'], job['snapshot']['task_type'], job['attempts'], job['max_attempts'])
         grade = asyncio.create_task(self._grade(job))
         heartbeat = asyncio.create_task(self._renew(job))
         try:
@@ -50,7 +52,10 @@ class GradingWorker:
             if heartbeat in finished:
                 await heartbeat
             result = await grade
-            self.queue.complete(job, result)
+            if self.queue.complete(job, result):
+                logger.info('阅卷作业 %s 已完成，结果已保存', job['id'])
+            else:
+                logger.warning('阅卷作业 %s 的租约已过期，未提交本次结果', job['id'])
         except LeaseLost:
             logger.info('阅卷租约已失效，丢弃当前执行结果：%s', job['id'])
         except asyncio.CancelledError:
@@ -59,6 +64,7 @@ class GradingWorker:
         except (GradingFailure, ServiceError) as exc:
             message = str(exc) if isinstance(exc, GradingFailure) else exc.message
             self.queue.fail(job, message, retryable=getattr(exc, 'retryable', False))
+            logger.warning('阅卷作业 %s 未完成：%s', job['id'], message)
         except Exception:
             logger.exception('阅卷任务处理异常：%s', job['id'])
             self.queue.fail(job, '评分服务异常，请管理员检查服务日志')

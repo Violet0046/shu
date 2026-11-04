@@ -1,5 +1,6 @@
 """HTTP 应用组装入口；默认仅提供 API，不在网页进程中执行阅卷。"""
 import asyncio
+import logging
 import os
 import time
 from contextlib import asynccontextmanager, suppress
@@ -20,10 +21,18 @@ def create_app(data_dir=None, provider_factory=None, start_worker=None, registry
     services = build_services(data_dir, provider_factory, registry)
     worker = GradingWorker(services)
     embedded = os.getenv('SHU_EMBEDDED_WORKER')=='1' if start_worker is None else start_worker
+    concurrency = int(os.getenv('SHU_WORKER_CONCURRENCY','2'))
+    if embedded and not 1 <= concurrency <= 16:
+        raise ValueError('SHU_WORKER_CONCURRENCY 必须为 1～16')
 
     @asynccontextmanager
     async def lifespan(app):
-        runner = asyncio.create_task(worker.run()) if embedded else None
+        logger = logging.getLogger('uvicorn.error')
+        runner = asyncio.create_task(worker.run(concurrency)) if embedded else None
+        if embedded:
+            logger.info('阅卷服务已随网页启动，并发数 %s；数据目录：%s', concurrency, services.store.root)
+        else:
+            logger.info('当前仅启动网页/API。请另行启动 python -m shu_grading.backend.worker；否则答卷只会排队等待。')
         yield
         if runner:
             runner.cancel()
