@@ -58,6 +58,8 @@ class LocalFileStorage:
         try:
             self.path(source_key).write_bytes(prepared.raw)
             prepared.image.save(self.path(model_key), 'JPEG', quality=92)
+            self.preview(model_key)
+            self.reading(model_key)
         except Exception:
             self.discard(model_key, source_key)
             raise
@@ -66,16 +68,25 @@ class LocalFileStorage:
     def discard(self, *keys):
         for key in keys:
             self.path(key).unlink(missing_ok=True)
+            if key.endswith('.jpg') and '.source.' not in key:
+                self.path(key).with_suffix('.preview.jpg').unlink(missing_ok=True)
+                self.path(key).with_suffix('.reading.jpg').unlink(missing_ok=True)
 
     def preview(self, key):
+        return self._view(key, 'preview', 1600, 82)
+
+    def reading(self, key):
+        return self._view(key, 'reading', 3072, 85)
+
+    def _view(self, key, kind, size, quality):
         source = self.path(key)
-        target = source.with_suffix('.preview.jpg')
+        target = source.with_suffix('.'+kind+'.jpg')
         if not target.exists():
             temporary = target.with_name(target.name+'.'+secrets.token_hex(8)+'.tmp')
             try:
                 with Image.open(source) as image:
-                    image.thumbnail((1600,1600))
-                    image.convert('RGB').save(temporary,'JPEG',quality=82,optimize=True)
+                    image.thumbnail((size,size))
+                    image.convert('RGB').save(temporary,'JPEG',quality=quality,optimize=True,progressive=True)
                 os.replace(temporary,target)
             finally:
                 temporary.unlink(missing_ok=True)

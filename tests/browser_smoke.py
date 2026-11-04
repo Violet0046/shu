@@ -158,6 +158,27 @@ def main(output: Path):
                 assert 'preview=true' in page.locator('#original-image').get_attribute('src')
                 assert page.locator('.paper-hint').inner_text() == '点击图片后，可按住 Ctrl 用滚轮缩放'
                 page.screenshot(path=str(output/'web-v3-review.png'), full_page=True)
+                # Delay the reading image: preview must remain visible and zoom must survive upgrade.
+                page.wait_for_function("document.querySelector('#original-image').naturalWidth>0")
+                page.evaluate('clearImageCache()')
+                held=[]
+                page.route('**/image?reading=true',lambda route:held.append(route))
+                page.locator('#original-image').click()
+                page.wait_for_function("imageViewer?.width>0 && imageViewer.quality==='preview'")
+                page.evaluate('zoomImage(1.1,400,300)')
+                geometry=page.evaluate('({x:imageViewer.x,y:imageViewer.y,width:imageViewer.width*imageViewer.scale})')
+                page.wait_for_timeout(100)
+                assert held
+                import io
+                high=io.BytesIO()
+                paper.resize((1600,2200)).save(high,'JPEG')
+                held[0].fulfill(status=200,content_type='image/jpeg',body=high.getvalue())
+                page.wait_for_function("imageViewer?.quality==='reading'")
+                upgraded=page.evaluate('({x:imageViewer.x,y:imageViewer.y,width:imageViewer.width*imageViewer.scale})')
+                assert all(abs(geometry[k]-upgraded[k])<1 for k in geometry)
+                page.get_by_role('button',name='关闭原图',exact=True).click()
+                page.unroute('**/image?reading=true')
+                page.evaluate('clearImageCache()')
                 page.locator('#original-image').click()
                 page.locator('#viewer-image').wait_for()
                 page.wait_for_function('imageViewer && imageViewer.width > 0')

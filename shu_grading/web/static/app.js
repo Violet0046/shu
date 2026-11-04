@@ -26,7 +26,7 @@ async function home(page='tasks'){
   const tasks=await api('/tasks');
   shell(`<section class="welcome"><div class="eyebrow">阅卷工作台</div><h1>今天准备批改什么？</h1><p class="muted">创建新的阅卷任务，或继续上次的录入与复核。</p></section><div class="subject-grid"><div class="card subject available"><span class="tag good">当前可用</span><h2>作文阅卷</h2><p class="muted">平时测验选择学生，正式考试匿名编号。<br>原文转写、AI 初评与教师复核在同一工作台完成。</p>${action('new-task','创建阅卷任务')}</div><div class="card subject future"><span class="tag">后续开放</span><h2>阅读理解</h2><p class="muted">根据参考答案与得分要点辅助阅卷。</p></div><div class="card subject future"><span class="tag">后续开放</span><h2>更多题型</h2><p class="muted">翻译、默写等题型将逐步扩展。</p></div></div><div class="card"><h2>最近阅卷任务</h2>${tasks.map(t=>`<div class="task-row"><div><strong>${esc(t.title)}</strong><div class="muted">${esc(t.class_name)} · ${t.total} 份答卷 · 已确认 ${t.confirmed} 份</div></div><div class="actions">${action('open-task','进入工作台',true,`data-id="${t.id}"`)}${action('delete-task','删除任务',true,`data-id="${t.id}"`)}</div></div>`).join('')||'<div class="empty">还没有任务。创建一次题目和标准，即可连续录入多份答卷。</div>'}</div>`);
 }
-function auth(){clearTask();$('#account').innerHTML='';shell(`<div class="card auth"><div class="eyebrow">欢迎使用</div><h1>登录阅卷工作台</h1><p class="muted">请使用管理员分配的账号登录。班级、模板和任务随账号保存。</p><form id="auth-form">${field('账号','<input name="username" required minlength="2" maxlength="80" autocomplete="username">')}${field('密码（至少 8 位）','<input name="password" type="password" required minlength="8" maxlength="128" autocomplete="current-password">')}<div class="actions"><button type="submit" value="login">登录</button></div></form></div>`);}
+function auth(){clearImageCache();clearTask();$('#account').innerHTML='';shell(`<div class="card auth"><div class="eyebrow">欢迎使用</div><h1>登录阅卷工作台</h1><p class="muted">请使用管理员分配的账号登录。班级、模板和任务随账号保存。</p><form id="auth-form">${field('账号','<input name="username" required minlength="2" maxlength="80" autocomplete="username">')}${field('密码（至少 8 位）','<input name="password" type="password" required minlength="8" maxlength="128" autocomplete="current-password">')}<div class="actions"><button type="submit" value="login">登录</button></div></form></div>`);}
 function showAccount(me){$('#account').innerHTML=`<div class="account-menu"><button type="button" class="account-avatar secondary" aria-label="账户菜单" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 21v-2a8 8 0 0116 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button><div class="account-dropdown"><div class="account-profile">${me.is_admin?`<button type="button" class="admin-account-link" data-action="admin-home"><strong>${esc(me.username)}</strong></button>`:`<strong>${esc(me.username)}</strong>`}</div>${action('nav','我的班级',true,'data-page="classes"')}${action('nav','评分标准',true,'data-page="templates"')}${action('logout','退出登录',true)}</div></div>`;const menu=$('.account-menu'),toggle=menu.querySelector('button');toggle.addEventListener('click',()=>{const open=menu.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));});}
 function ruleForm(rubric){
   rubric=rubric||{max_score:50,grade_level:'高中',essay_grading:'',criteria:[{name:'立意',weight:.3,description:'中心明确，符合题意'},{name:'内容',weight:.3,description:'选材具体，感情真实'},{name:'结构',weight:.2,description:'结构清楚，详略得当'},{name:'语言',weight:.2,description:'语句通顺，用词准确'}]};
@@ -83,7 +83,7 @@ function updateConfirmLabel(){const button=$('#review-form button[value="confirm
 function scoreForm(s){const result=s.final_result||s.ai_result;if(!result)return `<div class="empty"><h2>${statusLabel(s)}</h2><p>${s.status==='failed'?esc(s.error):'AI 正在后台转写并评分，您可以继续录入其他答卷。'}</p></div>${s.status==='failed'&&!s.confirmed?action('retry','AI 重审',true):''}`;
   return `<h2>AI 正文评分</h2><div class="score">${s.ai_result.total_score} <span class="muted" style="font-size:17px">/ ${result.max_score}</span></div><p class="muted">${s.confirmed?'教师已确认':'待教师复核'}${s.final_result?' · 已载入教师保存的结果':''}</p><form id="review-form" data-revision="${s.revision}">${result.criterion_scores.map((c,i)=>`<div class="score-row"><label for="score-${i}">${esc(c.name)}</label><input id="score-${i}" data-score="${i}" type="number" min="0" max="${c.max_score}" step="0.1" value="${c.score}" required><span class="muted">/ ${c.max_score}</span></div><p class="score-comment">${esc(c.comment)}</p>`).join('')}<div style="margin-top:20px">${field('评语（可编辑）',`<textarea id="review-comment">${esc(result.overall_comment)}</textarea>`)}</div><details><summary>亮点与改进建议</summary>${field('亮点（每行一条）',`<textarea id="review-highlights">${esc(result.highlights.join('\n'))}</textarea>`)}${field('改进建议（每行一条）',`<textarea id="review-suggestions">${esc(result.suggestions.join('\n'))}</textarea>`)}</details><div class="deduction">${field('教师卷面扣分',`<input id="presentation-deduction" type="number" min="0" max="${result.max_score}" step="0.1" value="${result.presentation_deduction||0}">`)}<p class="muted">不填写即扣 0 分。最终成绩：<strong id="teacher-total">${result.total_score}</strong> 分</p></div><div class="sticky-actions"><button type="submit" value="confirm" ${['pending','processing'].includes(s.status)?'disabled':''}>${state.task.submissions.some(r=>r.id!==s.id&&!r.confirmed&&r.status==='ready')?'确认并下一位':'确认完成'}</button>${!s.confirmed?action('retry','AI 重审',true,['pending','processing'].includes(s.status)?'disabled':''):''}</div></form>${s.status==='failed'?`<p class="error">${esc(s.error)}</p>`:''}`;
 }
-function renderReview(){const s=currentSubmission();if(!s)return;state.dirty=false;$('#workspace-columns').innerHTML=`<section class="card paper-panel"><div class="page-head"><div><h2>${esc(s.label)} · 作文答卷</h2><span class="tag ${statusClass(s)}">${statusLabel(s)}</span></div>${state.task.mode==='named'?action('correct-student','更正学生',true):''}</div><div id="paper-view">${paperHtml(s)}</div></section><section class="card score-panel">${scoreForm(s)}</section>`;if($('#review-form'))$('#review-form')._result=structuredClone(s.final_result||s.ai_result);drawDirectory();}
+function renderReview(){const s=currentSubmission();if(!s)return;state.dirty=false;$('#workspace-columns').innerHTML=`<section class="card paper-panel"><div class="page-head"><div><h2>${esc(s.label)} · 作文答卷</h2><span class="tag ${statusClass(s)}">${statusLabel(s)}</span></div>${state.task.mode==='named'?action('correct-student','更正学生',true):''}</div><div id="paper-view">${paperHtml(s)}</div></section><section class="card score-panel">${scoreForm(s)}</section>`;if($('#review-form'))$('#review-form')._result=structuredClone(s.final_result||s.ai_result);drawDirectory();warmSubmissionImages(s.id);}
 async function selectSubmission(id){if(!await mayLeave())return;state.image=null;state.selected=id;state.student=currentSubmission()?.student_id||null;state.view='text';renderReview();}
 async function chooseImage(file){if(!file||!file.type.startsWith('image/'))throw Error('请选择图片，PDF 请先截图');if(file.size>15*1024*1024)throw Error('图片不能超过 15 MB');state.requestId=globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)+'-'+Math.random().toString(36).slice(2);state.image=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(Error('读取图片失败'));r.readAsDataURL(file);});$('#upload-preview').src=state.image;$('#upload-preview').hidden=false;$('#preview-shell').hidden=false;$('#image-hint').textContent='请检查正文完整、清晰后提交。';}
 async function checkWorkerHealth(force=false){
@@ -106,38 +106,6 @@ window.addEventListener('pageshow',()=>checkCapture());
 window.addEventListener('focus',()=>checkCapture());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkCapture();});
 window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#capture=')&&location.hash.slice('#capture='.length)!==state.captureToken){state.captureInvalid=false;state.image=null;state.dirty=false;capturePage().catch(error=>captureUnavailable(error.message));}});
-// 独立全屏看图层，避免 Ctrl+滚轮触发整个网页缩放。
-let imageViewer=null;
-function showFullImage(src){
-  if(!src)return;
-  let modal=$('#image-viewer');
-  if(!modal){
-    modal=document.createElement('dialog');modal.id='image-viewer';modal.setAttribute('aria-label','原图查看');
-    modal.innerHTML='<button type="button" class="viewer-close" aria-label="关闭原图"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><div id="viewer-stage"><img id="viewer-image" alt="作文原图" draggable="false"></div>';
-    document.body.append(modal);
-    modal.addEventListener('close',()=>{imageViewer=null;document.body.classList.remove('viewing-image');});
-    modal.addEventListener('cancel',()=>{imageViewer=null;document.body.classList.remove('viewing-image');});
-    modal.addEventListener('wheel',event=>{
-      event.preventDefault();if(!imageViewer)return;
-      const stage=$('#viewer-stage'),bounds=stage.getBoundingClientRect();
-      if(event.ctrlKey){zoomImage(Math.exp(-event.deltaY*.002),event.clientX-bounds.left,event.clientY-bounds.top);}
-    },{passive:false});
-    const stage=modal.querySelector('#viewer-stage');
-    stage.addEventListener('click',event=>{if(event.target===stage)modal.close();});
-    modal.querySelector('.viewer-close').addEventListener('click',()=>modal.close());
-  }
-  imageViewer={x:0,y:0,scale:1,width:0,height:0};
-  const image=$('#viewer-image');image.style.visibility='hidden';
-  image.onload=()=>{if(!imageViewer)return;imageViewer.width=image.naturalWidth;imageViewer.height=image.naturalHeight;fitImage();image.style.visibility='visible';};
-  image.onerror=()=>{modal.close();toast('原图加载失败，请重新打开');};
-  if(!modal.open)modal.showModal();document.body.classList.add('viewing-image');image.src=src;
-  if(image.complete&&image.naturalWidth)image.onload();
-}
-function paintImage(){if(!imageViewer)return;const v=imageViewer;$('#viewer-image').style.transform=`translate(${v.x}px,${v.y}px) scale(${v.scale})`;}
-function fitImage(){if(!imageViewer?.width)return;const v=imageViewer,stage=$('#viewer-stage');v.scale=Math.min(1,(stage.clientWidth-40)/v.width,(stage.clientHeight-40)/v.height);v.x=(stage.clientWidth-v.width*v.scale)/2;v.y=(stage.clientHeight-v.height*v.scale)/2;paintImage();}
-function zoomImage(factor,x,y){const v=imageViewer;if(!v?.width)return;const scale=Math.max(.02,Math.min(16,v.scale*factor));const px=(x-v.x)/v.scale,py=(y-v.y)/v.scale;v.x=x-px*scale;v.y=y-py*scale;v.scale=scale;paintImage();}
-window.addEventListener('resize',()=>{if(imageViewer)fitImage();});
-
 document.addEventListener('input',e=>{
   if(e.target.dataset.rule){const r=rules[Number(e.target.closest('[data-index]').dataset.index)];r[e.target.dataset.rule]=e.target.dataset.rule==='points'?Number(e.target.value):e.target.value;updateTotal();}
   if(e.target.dataset.level){const r=rules[Number(e.target.closest('[data-index]').dataset.index)];r.level_descriptors=r.level_descriptors||{};r.level_descriptors[e.target.dataset.level]=e.target.value;}
@@ -186,7 +154,7 @@ document.addEventListener('click',async e=>{
     if(a==='new-anonymous'){if(!await mayLeave())return;state.image=null;state.student=null;renderEntry();}
     if(a==='pick-student'){state.student=b.dataset.id;const s=state.capture.students.find(s=>s.student_id===state.student);$('#selected-student').textContent=`已选择：${s.name}`;drawStudents($('#student-search').value);}
     if(a==='view'){state.view=b.dataset.view;$('#paper-view').innerHTML=paperHtml(currentSubmission());}
-    if(a==='full-image')showFullImage('/api/submissions/'+state.selected+'/image');if(a==='preview-image')showFullImage(state.image);
+    if(a==='full-image')showFullImage('/api/submissions/'+state.selected+'/image',$('#original-image'),'/api/submissions/'+state.selected+'/image?reading=true');if(a==='preview-image')showFullImage(state.image);
     if(a==='clear-image'){state.image=null;$('#upload-preview').hidden=true;$('#preview-shell').hidden=true;$('#image-file').value='';}
     if(a==='retry'){if(state.dirty)throw Error('请先确认当前评分修改');if(!await notice('AI 重审将再次调用模型，继续吗？',{title:'AI 重审',confirm:true}))return;await api('/submissions/'+state.selected+'/retry','POST',{});await refreshTask();toast('已加入评分队列');}
     if(a==='correct-student')dialog(`<h2>更正学生</h2>${state.task.students.filter(s=>!state.task.submissions.some(r=>r.id!==state.selected&&r.student_id===s.student_id)).map(s=>action('set-identity',esc(s.name),true,`data-id="${esc(s.student_id)}"`)).join(' ')}`);

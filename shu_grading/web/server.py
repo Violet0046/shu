@@ -23,7 +23,7 @@ STATIC_DIR = Path(__file__).parent/'static'
 def create_app(data_dir=None, provider_factory=None, start_worker=None, registry=None):
     index = (STATIC_DIR/'index.html').read_text(encoding='utf-8')
     versions = {name:hashlib.sha256((STATIC_DIR/name).read_bytes()).hexdigest()[:16]
-                for name in ('app.js','admin.js','style.css')}
+                for name in ('app.js','admin.js','viewer.js','style.css')}
     web_version = hashlib.sha256(''.join(versions.values()).encode()).hexdigest()[:16]
     for name, version in versions.items():
         index = index.replace(f'"/{name}"',f'"/{name}?v={version}"')
@@ -78,7 +78,7 @@ def create_app(data_dir=None, provider_factory=None, start_worker=None, registry
         response.headers['X-Frame-Options'] = 'DENY'
         if request.url.path.startswith('/api') and 'Cache-Control' not in response.headers:
             response.headers['Cache-Control'] = 'no-store'
-        if request.url.path in ('/app.js','/admin.js','/style.css'):
+        if request.url.path in ('/app.js','/admin.js','/viewer.js','/style.css'):
             response.headers['Cache-Control'] = 'no-cache'
         return response
 

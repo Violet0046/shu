@@ -13,13 +13,14 @@ def router(services):
         return services.submissions.submit(user(request), tid, body)
 
     @routes.get('/submissions/{sid}/image')
-    def image(sid: str, request: Request, preview: bool=False):
+    def image(sid: str, request: Request, preview: bool=False, reading: bool=False):
         row = services.submissions.get(user(request), sid)
-        path = services.files.preview(row['image']) if preview else services.files.path(row['original_image'] or row['image'])
+        path = services.files.preview(row['image']) if preview else services.files.reading(row['image']) if reading else services.files.path(row['original_image'] or row['image'])
         response = FileResponse(path,stat_result=path.stat(),headers={'Cache-Control':'private, no-cache'})
         # Authenticate before conditional responses; cached files never bypass access checks.
         if request.headers.get('if-none-match') == response.headers.get('etag'):
-            return Response(status_code=304,headers=dict(response.headers))
+            return Response(status_code=304,headers={key:response.headers[key]
+                for key in ('etag','last-modified','cache-control') if key in response.headers})
         return response
 
     @routes.put('/submissions/{sid}/review')

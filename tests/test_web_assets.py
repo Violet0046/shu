@@ -12,8 +12,8 @@ def test_entrypoints_version_assets_and_do_not_cache_html(tmp_path):
         index=client.get('/')
         assert index.headers['cache-control']=='no-store'
         assert client.get('/index.html').text==index.text
-        urls=re.findall(r'(?:src|href)="(/(?:app\.js|admin\.js|style\.css)\?v=[a-f0-9]+)"',index.text)
-        assert len(urls)==3
+        urls=re.findall(r'(?:src|href)="(/(?:app\.js|admin\.js|viewer\.js|style\.css)\?v=[a-f0-9]+)"',index.text)
+        assert len(urls)==4
         for url in urls:
             asset=client.get(url)
             assert asset.status_code==200 and asset.headers['cache-control']=='no-cache'

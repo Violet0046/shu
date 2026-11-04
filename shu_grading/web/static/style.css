@@ -242,3 +242,5 @@ body.viewing-image { overflow:hidden; }
 .tag.unsubmitted { background:#f0f2f5; color:#778292; }
 .tag.review { background:#e7efff; color:#2563eb; }
 .uncertain-char { color:#c62828; background:#fff0f0; font-weight:700; border-radius:3px; padding:0 2px; }
+
+#viewer-retry { position:absolute; z-index:3; bottom:24px; left:50%; transform:translateX(-50%); background:white; color:var(--blue); border:1px solid var(--line); box-shadow:0 4px 20px #15253a22; }
