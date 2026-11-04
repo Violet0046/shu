@@ -69,6 +69,8 @@ class EssayGrader:
             rubric.description = request.assignment
             result, error = await grade_essay(list(request.image_paths), rubric, provider)
             if error or result is None:
+                if error and error.startswith("模型客户端错误:"):
+                    raise GradingFailure("模型响应处理失败，请管理员检查服务器依赖后重试")
                 detail = (error or '').lower()
                 permanent = any(marker in detail for marker in ('400','401','403','404','authentication',
                     'invalid_api_key','model_not_found','permission','context_length_exceeded','unsupported'))

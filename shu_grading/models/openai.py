@@ -43,7 +43,11 @@ class OpenAIProvider(ModelProvider):
             )
         from openai import AsyncOpenAI
 
-        self.client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+        # Avoid optional Brotli decoders incompatible with some SDK transports.
+        self.client = AsyncOpenAI(
+            api_key=api_key, base_url=base_url,
+            default_headers={"Accept-Encoding": "gzip, deflate"},
+        )
         self.base_url = base_url
         self.max_tokens = max_tokens
         self.temperature = temperature

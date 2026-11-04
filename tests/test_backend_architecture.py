@@ -149,11 +149,14 @@ def test_transient_failure_retries_with_backoff(web):
     assert jobs[0]['attempts']==2 and jobs[0]['error'] is None
 
 
-@pytest.mark.parametrize('message,expected',[('401 AuthenticationError','failed'),('429 rate limit','pending')])
+@pytest.mark.parametrize('message,expected',[('401 AuthenticationError','failed'),('429 rate limit','pending'),
+                                           ('process() takes no keyword arguments','failed')])
 def test_provider_auth_failure_is_terminal_but_rate_limit_is_retryable(web,message,expected):
     client,app,_=web
     class FailingProvider(FakeProvider):
         async def chat(self,*args,**kwargs):
+            if message == 'process() takes no keyword arguments':
+                raise TypeError(message)
             raise RuntimeError(message)
     app.state.services.registry.resolve('essay').provider_factory=lambda:FailingProvider()
     tid=task(client)

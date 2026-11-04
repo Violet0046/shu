@@ -203,6 +203,9 @@ async def grade_essay(
             messages=messages,
             json_mode=json_mode,
         )
+    except (TypeError, AttributeError) as e:
+        logger.exception("模型客户端处理响应失败")
+        return None, f"模型客户端错误: {e}"
     except Exception as e:
         logger.error(f"AI 调用失败: {e}")
         return None, f"AI 调用失败: {e}"
