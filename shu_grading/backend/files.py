@@ -3,6 +3,8 @@ import base64
 import binascii
 import hashlib
 import io
+import os
+import secrets
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
@@ -64,3 +66,17 @@ class LocalFileStorage:
     def discard(self, *keys):
         for key in keys:
             self.path(key).unlink(missing_ok=True)
+
+    def preview(self, key):
+        source = self.path(key)
+        target = source.with_suffix('.preview.jpg')
+        if not target.exists():
+            temporary = target.with_name(target.name+'.'+secrets.token_hex(8)+'.tmp')
+            try:
+                with Image.open(source) as image:
+                    image.thumbnail((1600,1600))
+                    image.convert('RGB').save(temporary,'JPEG',quality=82,optimize=True)
+                os.replace(temporary,target)
+            finally:
+                temporary.unlink(missing_ok=True)
+        return target

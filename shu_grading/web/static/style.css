@@ -238,3 +238,7 @@ body.viewing-image { overflow:hidden; }
 .pair-footer input { flex:1; }
 .pair-footer button { flex-shrink:0; }
 @media(max-width:600px) { .pair-footer { flex-wrap:wrap; } .pair-footer input { flex-basis:100%; } }
+
+.tag.unsubmitted { background:#f0f2f5; color:#778292; }
+.tag.review { background:#e7efff; color:#2563eb; }
+.uncertain-char { color:#c62828; background:#fff0f0; font-weight:700; border-radius:3px; padding:0 2px; }

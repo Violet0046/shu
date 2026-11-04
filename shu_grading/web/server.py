@@ -67,7 +67,7 @@ def create_app(data_dir=None, provider_factory=None, start_worker=None, registry
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy'] = 'no-referrer'
         response.headers['X-Frame-Options'] = 'DENY'
-        if request.url.path.startswith('/api'):
+        if request.url.path.startswith('/api') and 'Cache-Control' not in response.headers:
             response.headers['Cache-Control'] = 'no-store'
         return response
 

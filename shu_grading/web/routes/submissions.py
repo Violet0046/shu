@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 
 from .contracts import ReviewInput, SubmissionInput
 from .dependencies import user
@@ -13,9 +13,14 @@ def router(services):
         return services.submissions.submit(user(request), tid, body)
 
     @routes.get('/submissions/{sid}/image')
-    def image(sid: str, request: Request):
+    def image(sid: str, request: Request, preview: bool=False):
         row = services.submissions.get(user(request), sid)
-        return FileResponse(services.files.path(row['original_image'] or row['image']))
+        path = services.files.preview(row['image']) if preview else services.files.path(row['original_image'] or row['image'])
+        response = FileResponse(path,stat_result=path.stat(),headers={'Cache-Control':'private, no-cache'})
+        # Authenticate before conditional responses; cached files never bypass access checks.
+        if request.headers.get('if-none-match') == response.headers.get('etag'):
+            return Response(status_code=304,headers=dict(response.headers))
+        return response
 
     @routes.put('/submissions/{sid}/review')
     def review(sid: str, body: ReviewInput, request: Request):

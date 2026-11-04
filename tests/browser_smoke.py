@@ -122,8 +122,11 @@ def main(output: Path):
                 page.locator('#notice-dialog').get_by_role('button',name='知道了').click()
                 page.locator('#image-file').set_input_files(str(image))
                 page.get_by_role('button', name='提交并录入下一位').click()
+                page.locator('.directory-item .tag.review').wait_for(timeout=15000)
                 page.locator('.directory-item[data-action=directory-student]').first.click()
                 page.locator('#review-form').wait_for(timeout=15000)
+                assert page.locator('.uncertain-char').inner_text() == '［疑字］'
+                assert page.locator('.directory-item .tag.review').count() == 1
                 assert page.locator('.sticky-actions button').all_text_contents() == ['确认完成','AI 重审']
                 assert '含标点，不含标题' in page.locator('.paper-toolbar .word-count').inner_text()
                 assert page.locator('.paper-hint').inner_text() == '转写不润色、不自动纠错；［疑字］请核对原图'
@@ -152,6 +155,7 @@ def main(output: Path):
                 assert page.locator('#teacher-total').text_content() == '39'
                 page.get_by_role('button',name='原图',exact=True).click()
                 page.locator('#original-image').wait_for()
+                assert 'preview=true' in page.locator('#original-image').get_attribute('src')
                 assert page.locator('.paper-hint').inner_text() == '点击图片后，可按住 Ctrl 用滚轮缩放'
                 page.screenshot(path=str(output/'web-v3-review.png'), full_page=True)
                 page.locator('#original-image').click()
@@ -241,9 +245,17 @@ def main(output: Path):
                 page.locator('#toast').wait_for(state='hidden',timeout=7000)
                 page.screenshot(path=str(output/'web-v3-entry.png'), full_page=True)
                 page.locator('#directory-search').fill('张')
+                # Reproduce a polling snapshot taken before POST finishes.
+                page.evaluate('''() => {const original=window.fetch;let hold=true;window.restoreFetch=()=>window.fetch=original;
+                    window.fetch=async(...args)=>{const r=await original(...args);const url=String(args[0]);
+                    if(hold&&url==='/api/tasks/'+state.task.id&&(!args[1]?.method||args[1].method==='GET')){hold=false;await new Promise(resolve=>window.releasePoll=resolve);}
+                    if(url.endsWith('/submissions')&&args[1]?.method==='POST')setTimeout(()=>window.releasePoll?.(),100);
+                    return r;};void refreshTask();}''')
+                page.wait_for_function('Boolean(window.releasePoll)')
                 page.locator('#image-file').set_input_files(str(image))
                 page.get_by_role('button',name='提交并录入下一位').click()
                 page.get_by_text('当前学生：李同学改名',exact=True).wait_for()
+                page.evaluate('window.restoreFetch()')
                 assert page.locator('#directory-search').input_value()==''
                 assert page.locator('.directory-item strong').all_text_contents()==['李同学改名','张同学']
                 first=page.locator('.directory-item').first
