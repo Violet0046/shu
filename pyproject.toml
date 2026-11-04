@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shu-grading"
+version = "0.2.0"
+description = "网页 AI 阅卷工作台，支持独立工作进程、持久队列和可扩展题型"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Violet0046" }]
+keywords = ["education", "grading", "essay", "chinese"]
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "qrcode[pil]>=7.4.0",
+    "anthropic>=0.40.0",
+    "openai>=1.50.0",
+    "pydantic>=2.7.0",
+    "python-dotenv>=1.0.0",
+    "Pillow>=10.0.0",
+    "openpyxl>=3.1.0",
+    "httpx>=0.27.0",
+    "tenacity>=8.3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
+browser = ["playwright>=1.50.0"]
+
+[project.scripts]
+shu-grading-admin = "shu_grading.backend.admin:main"
+shu-grading-worker = "shu_grading.backend.worker:main"
+
+[project.urls]
+Homepage = "https://github.com/Violet0046/shu"
+Issues = "https://github.com/Violet0046/shu/issues"
+
+[tool.setuptools.packages.find]
+include = ["shu_grading*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+shu_grading = ["prompts/*.txt", "web/static/*", "backend/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

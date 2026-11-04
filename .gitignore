@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.spec
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project
+.env
+.env.server
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+.pytest_cache/
+*.db
+*.db-journal
+logs/
+data/
+.shu-grading/
+test_essays/
+sample_photos/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local settings and runtime content
+.env.*
+!.env.server.example
+.claude/
+uploads/
+test_photos/

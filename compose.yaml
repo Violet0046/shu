@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      SHU_WEB_DATA_DIR: /data
+      SHU_WEB_HOST: 0.0.0.0
+      SHU_PUBLIC_URL: ${SHU_PUBLIC_URL:-http://127.0.0.1:8000}
+      SHU_COOKIE_SECURE: ${SHU_COOKIE_SECURE:-0}
+      SHU_EMBEDDED_WORKER: "0"
+    volumes:
+      - grading-data:/data
+  worker:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-m", "shu_grading.backend.worker"]
+    env_file:
+      - .env.server
+    environment:
+      SHU_WEB_DATA_DIR: /data
+    volumes:
+      - grading-data:/data
+volumes:
+  grading-data:

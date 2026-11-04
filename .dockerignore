@@ -1,0 +1,16 @@
+.env
+.env.*
+.git
+.pytest_cache
+**/__pycache__
+**/*.pyc
+*.egg-info
+build
+dist
+test_photos
+tests
+examples
+*.xlsx
+*.db
+*.sqlite3*
+uploads

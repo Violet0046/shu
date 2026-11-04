@@ -1,0 +1,20 @@
+【作文题目】
+{title}
+
+【题目说明】
+{description}
+
+【评分标准】(总分 {max_score} 分,{grade_level})
+
+{criteria_text}
+
+{criterion_details}
+
+【评分指导】
+{grading_instructions}
+
+按 JSON 格式输出:
+只按【评分指导】评价作文正文。不要识别、推测或输出姓名、学号和班级。
+每个评分维度的 score 是该维度实际得分，不要再次乘以权重。
+同时输出 transcription：忠实转写正文，保留段落、错别字和标点，不润色、不自动纠错，认不清的字用［疑字］标记。
+评分针对原始正文；不评价字迹美观或整洁度，卷面扣分由老师决定。
