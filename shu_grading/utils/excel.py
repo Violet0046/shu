@@ -21,7 +21,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 
-from ..schemas import GradingReport, ReportRecord, GradingStatus, GradingSummary
+from ..schemas import GradingReport, GradingStatus, GradingSummary
 
 logger = logging.getLogger(__name__)
 
@@ -86,15 +86,6 @@ def _auto_size_columns(ws: Worksheet, min_width: int = 10, max_width: int = 60) 
                     max_len = cell_len
         width = max(min_width, min(max_len + 4, max_width))
         ws.column_dimensions[col_letter].width = width
-
-
-def _status_zh(status: GradingStatus) -> str:
-    """状态码转中文."""
-    mapping = {
-        GradingStatus.SUCCESS: "成功",
-        GradingStatus.AI_FAILED: "AI失败",
-    }
-    return mapping.get(status, status.value)
 
 
 def write_scores_sheet(wb: Workbook, batch_result: GradingReport) -> Worksheet:

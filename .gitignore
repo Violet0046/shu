@@ -54,7 +54,7 @@ Thumbs.db
 
 # Local settings and runtime content
 .env.*
-!.env.server.example
+!.env.example
 .claude/
 uploads/
 test_photos/

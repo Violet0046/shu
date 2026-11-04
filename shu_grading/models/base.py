@@ -81,13 +81,7 @@ class ModelProvider(ABC):
             max_tokens: 覆盖默认 max_tokens
         """
 
-    @abstractmethod
-    def supports_vision(self) -> bool:
-        """是否支持图像输入."""
 
-    @abstractmethod
-    def estimate_cost(self, messages: list[ChatMessage]) -> float:
-        """估算本次调用费用(元).本地模型返回 0."""
 
     def validate_config(self) -> list[str]:
         """检查 provider 配置,返回错误信息列表."""

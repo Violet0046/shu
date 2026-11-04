@@ -13,14 +13,14 @@
 需要 Python 3.10 或更新版本。
 
 ```powershell
-python -m pip install -e .
+python -m pip install .
 python -m shu_grading.backend.admin create-user teacher01
 ```
 
 本地测试只需启动：
 
 ```powershell
-python web_app.py
+shu-grading-web
 ```
 
 该命令默认同时启动网页和阅卷服务，已排队的答卷会自动继续处理。服务器拆分部署使用 `python web_app.py --api-only`，并另行启动 `python -m shu_grading.backend.worker --concurrency 2`。
@@ -59,6 +59,8 @@ node --check shu_grading/web/static/app.js
 
 ## 部署
 
-提供 `Dockerfile` 和 `compose.yaml`，包含独立 web、worker 服务及持久数据卷。先根据 `.env.server.example` 创建服务器配置，再按 [部署说明](WEB_README.md) 启动。
+采用 Python 虚拟环境直接安装，服务器无需 Docker。`pyproject.toml` 是唯一依赖清单，`python -m pip install .` 自动安装项目和全部运行依赖，无需另写 requirements.txt。
 
-当前采用单服务器 SQLite 与本地图片存储。Docker 镜像和真实模型效果需在目标环境验证。
+安装后提供 `shu-grading-web`、`shu-grading-worker`、`shu-grading-admin` 三个命令。源码目录仍可使用 `python web_app.py` 本地测试。
+
+服务器配置及更新步骤见 [部署说明](WEB_README.md)。`deploy/` 提供 Linux systemd 服务和 Nginx 转发示例；当前采用单服务器 SQLite 和本地图片存储。

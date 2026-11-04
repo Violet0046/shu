@@ -1,0 +1,20 @@
+[Unit]
+Description=Shu grading worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=shu
+Group=shu
+WorkingDirectory=/opt/shu
+EnvironmentFile=/etc/shu/shu.env
+Environment=PYTHONUNBUFFERED=1
+StateDirectory=shu
+ExecStart=/opt/shu/.venv/bin/shu-grading-worker
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

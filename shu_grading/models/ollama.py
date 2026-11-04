@@ -6,7 +6,6 @@ Ollama 通过 HTTP API 调用本地模型,无需 API key。
 
 from __future__ import annotations
 
-import base64
 import logging
 from typing import Any
 
@@ -41,10 +40,6 @@ class OllamaProvider(ModelProvider):
         self.max_tokens = max_tokens
         self.temperature = temperature
 
-    def supports_vision(self) -> bool:
-        """Ollama 是否支持视觉取决于具体模型."""
-        vision_keywords = ("vl", "vision", "llava", "minicpm-v")
-        return any(kw in self.model_name.lower() for kw in vision_keywords)
 
     def validate_config(self) -> list[str]:
         """检查 Ollama 服务是否可达."""
@@ -80,9 +75,6 @@ class OllamaProvider(ModelProvider):
 
         return errors
 
-    def estimate_cost(self, messages: list[ChatMessage]) -> float:
-        """本地运行,无 API 费用.返回 0."""
-        return 0.0
 
     @retry(
         stop=stop_after_attempt(3),
@@ -148,11 +140,3 @@ class OllamaProvider(ModelProvider):
             model=self.model_name,
             raw=data,
         )
-
-
-def encode_image_base64(path: str | bytes) -> str:
-    """辅助函数:把图片编码为 base64."""
-    if isinstance(path, str):
-        with open(path, "rb") as f:
-            return base64.standard_b64encode(f.read()).decode("utf-8")
-    return base64.standard_b64encode(path).decode("utf-8")

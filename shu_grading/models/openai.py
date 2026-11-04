@@ -32,7 +32,6 @@ class OpenAIProvider(ModelProvider):
         base_url: str | None = None,
         max_tokens: int = 2048,
         temperature: float = 0.1,
-        provider_kind: str = "openai",  # 仅用于显示,不影响逻辑
         **kwargs: Any,
     ) -> None:
         super().__init__(model_name, **kwargs)
@@ -51,12 +50,7 @@ class OpenAIProvider(ModelProvider):
         self.base_url = base_url
         self.max_tokens = max_tokens
         self.temperature = temperature
-        self.provider_kind = provider_kind
 
-    def supports_vision(self) -> bool:
-        """OpenAI 视觉模型 + 豆包视觉模型."""
-        vision_keywords = ("vision", "gpt-4o", "gpt-4-vision", "doubao", "vl")
-        return any(kw in self.model_name.lower() for kw in vision_keywords)
 
     def validate_config(self) -> list[str]:
         errors: list[str] = []
@@ -64,24 +58,6 @@ class OpenAIProvider(ModelProvider):
             errors.append("OpenAI client 未初始化")
         return errors
 
-    def estimate_cost(self, messages: list[ChatMessage]) -> float:
-        """估算费用（元）。价格随 provider 不同,这里用近似值."""
-        input_chars = sum(len(m.content) for m in messages)
-        image_count = sum(len(m.images) for m in messages)
-        input_tokens = input_chars * 0.5 + image_count * 800
-        output_tokens = 800
-
-        # 简化价格表(元/百万 token)
-        if self.provider_kind == "doubao":
-            input_price, output_price = 5, 9  # 豆包较便宜
-        elif "gpt-4o" in self.model_name.lower():
-            input_price, output_price = 18, 72
-        else:
-            input_price, output_price = 2, 6
-
-        return (input_tokens / 1_000_000) * input_price + (
-            output_tokens / 1_000_000
-        ) * output_price
 
     @retry(
         stop=stop_after_attempt(3),
@@ -191,6 +167,5 @@ class DoubaoProvider(OpenAIProvider):
             model_name=model_name,
             api_key=api_key,
             base_url=base_url,
-            provider_kind="doubao",
             **kwargs,
         )

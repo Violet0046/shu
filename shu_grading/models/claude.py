@@ -12,7 +12,7 @@ from tenacity import (
     wait_exponential,
 )
 
-from .base import ChatMessage, ChatResponse, ImageInput, ModelProvider
+from .base import ChatMessage, ChatResponse, ModelProvider
 
 logger = logging.getLogger(__name__)
 
@@ -46,31 +46,10 @@ class ClaudeProvider(ModelProvider):
         self.max_tokens = max_tokens
         self.temperature = temperature
 
-    def supports_vision(self) -> bool:
-        return True
 
     def validate_config(self) -> list[str]:
         return [] if self.client else ["Claude client 未初始化"]
 
-    def estimate_cost(self, messages: list[ChatMessage]) -> float:
-        """估算费用（元）。基于 token 数 + 当前价格。
-
-        Claude Sonnet 4.5: ¥21/MTok input, ¥105/MTok output (大致)
-        """
-        # 简化估算:每字符约 0.5 token(中文更密)
-        input_chars = sum(len(m.content) for m in messages)
-        # 图片按 1000 token 估算(Claude vision)
-        image_count = sum(len(m.images) for m in messages)
-        input_tokens = input_chars * 0.5 + image_count * 1000
-        output_tokens = 800  # 估算输出
-
-        # Sonnet 4.5 价格(元/百万 token)
-        input_price = 21
-        output_price = 105
-
-        return (input_tokens / 1_000_000) * input_price + (
-            output_tokens / 1_000_000
-        ) * output_price
 
     @retry(
         stop=stop_after_attempt(3),

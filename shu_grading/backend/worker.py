@@ -98,6 +98,8 @@ async def serve(concurrency):
 
 
 def main():
+    from ..config import load_environment
+    load_environment()
     parser = argparse.ArgumentParser(description='启动独立阅卷工作进程')
     parser.add_argument('--concurrency', type=int, default=int(os.getenv('SHU_WORKER_CONCURRENCY', '2')))
     args = parser.parse_args()

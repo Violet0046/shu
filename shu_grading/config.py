@@ -12,10 +12,16 @@ from typing import Literal
 
 from dotenv import load_dotenv
 
-# 加载 .env（如果存在）
-_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
-if _ENV_PATH.exists():
-    load_dotenv(_ENV_PATH)
+def load_environment():
+    """安装后从工作目录或指定文件读取；系统环境变量优先。"""
+    explicit = os.getenv("SHU_ENV_FILE")
+    path = Path(explicit).expanduser() if explicit else Path.cwd() / ".env"
+    if explicit and not path.is_file():
+        raise FileNotFoundError(f"SHU_ENV_FILE 指定的配置文件不存在：{path}")
+    load_dotenv(path, override=False)
+
+
+load_environment()
 
 
 ProviderName = Literal["claude", "openai", "ollama", "doubao"]
