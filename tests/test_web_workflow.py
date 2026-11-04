@@ -125,7 +125,7 @@ def test_templates_are_snapshotted_and_private(web):
         assert other.put('/api/templates/'+template_id, json={"name": "篡改", "rubric": changed}).status_code == 404
 
 
-def test_review_regrade_preserves_final_and_rejects_stale_update(web):
+def test_confirmed_review_blocks_regrade_and_rejects_stale_update(web):
     client, app, model = web
     tid = task(client)
     sid = submit(client, tid)
@@ -135,14 +135,14 @@ def test_review_regrade_preserves_final_and_rejects_stale_update(web):
     body = {"result": result, "confirm": True, "revision": row['revision']}
     assert client.put(f'/api/submissions/{sid}/review', json=body).status_code == 200
     assert client.put(f'/api/submissions/{sid}/review', json=body).status_code == 409
-    assert client.post(f'/api/submissions/{sid}/retry', json={}).status_code == 200
     assert client.post(f'/api/submissions/{sid}/retry', json={}).status_code == 409
-    process(client, app)
+    assert app.state.store.one('SELECT COUNT(*) AS n FROM grading_jobs')['n'] == 1
+    assert not client.portal.call(app.state.process_one)
     row = detail(client, tid)['submissions'][0]
     assert row['confirmed'] == 1
     assert row['final_result']['overall_comment'] == '教师确认的评语'
     assert row['ai_result']['overall_comment'] == RESULT['overall_comment']
-    assert len(client.get(f'/api/submissions/{sid}/versions').json()) == 3
+    assert len(client.get(f'/api/submissions/{sid}/versions').json()) == 2
 
 
 def test_export_uses_final_and_zero_score(web):
@@ -349,8 +349,8 @@ def test_transcription_and_teacher_deduction_export_and_regrade(web):
     assert cells[1][cells[0].index('正文分')] == 40
     assert cells[1][cells[0].index('卷面扣分')] == 3
     assert cells[1][2] == 37
-    client.post('/api/submissions/'+sid+'/retry',json={})
-    process(client,app)
+    assert client.post('/api/submissions/'+sid+'/retry',json={}).status_code == 409
+    assert not client.portal.call(app.state.process_one)
     row = detail(client,tid)['submissions'][0]
     assert row['final_result']['total_score'] == 37 and row['confirmed']
     result['presentation_deduction'] = 51

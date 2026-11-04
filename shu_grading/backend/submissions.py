@@ -83,7 +83,9 @@ class SubmissionService:
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             task = db.execute('SELECT * FROM tasks WHERE id=? AND owner=?', (row['task_id'], uid)).fetchone()
-            latest = db.execute('SELECT status,image FROM submissions WHERE id=?', (sid,)).fetchone()
+            latest = db.execute('SELECT status,image,confirmed FROM submissions WHERE id=?', (sid,)).fetchone()
+            if latest['confirmed']:
+                raise ServiceError(409, '已确认的成绩不能进行 AI 重审')
             if latest['status'] in ('pending','processing'):
                 raise ServiceError(409, '答卷已在处理队列中')
             self.queue.enqueue(db, sid, snapshot(task, latest['image']), self.max_attempts)

@@ -111,6 +111,10 @@ def main(output: Path):
                 page.locator('h1').hover()
                 page.screenshot(path=str(output/'web-paper-toolbar.png'), full_page=True)
                 page.get_by_text('我接过她手里的［疑字］', exact=False).wait_for()
+                page.get_by_role('button', name='AI 重审', exact=True).click()
+                assert page.locator('.notice-message').inner_text() == 'AI 重审将再次调用模型，继续吗？'
+                page.locator('#notice-dialog').get_by_role('button',name='确认',exact=True).click()
+                page.wait_for_function("state.task.submissions[0].revision >= 3 && state.task.submissions[0].status === 'ready'")
                 page.locator('#presentation-deduction').fill('2')
                 page.locator('[data-score="0"]').fill('25')
                 page.locator('#review-comment').fill('老师修改的评语：选材具体，请继续补充细节。')
@@ -171,10 +175,7 @@ def main(output: Path):
                     page.get_by_role('button', name='下载已确认成绩').click()
                 assert download.value.suggested_filename == '高一记叙文 · 逐份阅卷验收.xlsx'
                 page.on('dialog', lambda dialog: dialog.accept())
-                page.get_by_role('button', name='AI 重审', exact=True).click()
-                page.locator('#notice-dialog').get_by_role('button',name='确认',exact=True).click()
-                page.wait_for_function("document.querySelector('#review-comment')?.value.includes('老师修改的评语') && !document.querySelector('#review-form button[type=submit]').disabled")
-                assert page.locator('#review-comment').input_value().startswith('老师修改的评语')
+                assert page.get_by_role('button', name='AI 重审', exact=True).count() == 0
                 page.get_by_role('button',name='账户菜单').hover()
                 page.get_by_role('button', name='评分标准', exact=True).click()
                 page.locator('.task-row').filter(has_text='我的记叙文标准').get_by_role('button', name='编辑模板').click()
