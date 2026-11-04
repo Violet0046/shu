@@ -66,6 +66,8 @@ class SubmissionService:
         task = self.tasks.get(uid, row['task_id'])
         grader = self.registry.resolve(task['task_type'], task['grader_version'])
         body.result.transcription = json.loads(row['ai_result'] or '{}').get('transcription', '')
+        body.result.essay_title = json.loads(row['ai_result'] or '{}').get('essay_title', '')
+        body.result = type(body.result).model_validate(body.result.model_dump())
         result = dumps(grader.validate_review(json.loads(task['grading_config']), body.result).model_dump(mode='json'))
         with self.store.connect() as db:
             cursor = db.execute('''UPDATE submissions SET final_result=?,confirmed=?,revision=revision+1

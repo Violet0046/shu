@@ -19,7 +19,7 @@ RESULT = {"total_score": 40, "max_score": 50, "criterion_scores": [
     {"name": "内容", "score": 24, "max_score": 30, "comment": "内容充实"},
     {"name": "语言", "score": 16, "max_score": 20, "comment": "语言通顺"}],
     "overall_comment": "有真情实感", "highlights": ["选材具体"], "suggestions": ["补充细节"],
-    "transcription": "那一刻，我长大了\n我接过她手里的［疑字］，轻轻说了声谢谢。"}
+    "essay_title": "那一刻，我长大了", "transcription": "我接过她手里的［疑字］，轻轻说了声谢谢。"}
 
 
 class FakeProvider:

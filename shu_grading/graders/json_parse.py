@@ -150,7 +150,7 @@ async def repair_to_json(raw_text: str, model_provider: Any) -> dict[str, Any] |
 
 **需要保留的字段**(从原始输出提取):
 - identity.raw_name, identity.matched_name, identity.match_confidence, identity.candidates
-- total_score, criterion_scores, overall_comment, highlights, suggestions, word_count
+- total_score, criterion_scores, overall_comment, highlights, suggestions, essay_title, transcription
 
 **原始输出**:
 ```

@@ -148,13 +148,6 @@ def _parse_grading_data(data: dict[str, Any], rubric: Rubric) -> GradingResult:
     # 只从有效维度计算总分，不信任模型单独输出的总分。
     total_score = sum(cs.score for cs in criterion_scores)
 
-    word_count = data.get("word_count")
-    if word_count is not None:
-        try:
-            word_count = int(word_count)
-        except (ValueError, TypeError):
-            word_count = None
-
     return GradingResult(
         total_score=round(total_score, 1),
         max_score=rubric.max_score,
@@ -162,7 +155,7 @@ def _parse_grading_data(data: dict[str, Any], rubric: Rubric) -> GradingResult:
         overall_comment=data.get("overall_comment", ""),
         highlights=data.get("highlights", []),
         suggestions=data.get("suggestions", []),
-        word_count=word_count,
+        essay_title=data.get("essay_title", ""),
         transcription=data.get("transcription", ""),
     )
 

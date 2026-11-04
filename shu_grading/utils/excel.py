@@ -100,7 +100,7 @@ def _status_zh(status: GradingStatus) -> str:
 def write_scores_sheet(wb: Workbook, batch_result: GradingReport) -> Worksheet:
     """写入成绩总表.
 
-    列: 姓名 | 班级 | 总分 | 维度1 | 维度2 | ... | 总评 | 状态 | 需复核
+    列: 姓名 | 班级 | 总分 | 维度1 | 维度2 | ... | 总评 | 正文分 | 卷面扣分
     """
     ws = wb.create_sheet("成绩总表")
 
@@ -113,7 +113,7 @@ def write_scores_sheet(wb: Workbook, batch_result: GradingReport) -> Worksheet:
                     all_criteria_names.append(cs.name)
 
     # 表头
-    headers = ["姓名", "班级", "总分"] + all_criteria_names + ["总评", "状态", "需复核", "正文分", "卷面扣分"]
+    headers = ["姓名", "班级", "总分"] + all_criteria_names + ["总评", "正文分", "卷面扣分"]
     ws.append(headers)
     _apply_header_style(ws, 1, len(headers))
     ws.row_dimensions[1].height = 30
@@ -140,8 +140,6 @@ def write_scores_sheet(wb: Workbook, batch_result: GradingReport) -> Worksheet:
         row_data.append(
             record.grading.overall_comment if record.grading else record.error_message or ""
         )
-        row_data.append(_status_zh(record.status))
-        row_data.append("是" if record.needs_review else "")
         row_data.append(round(sum(c.score for c in record.grading.criterion_scores), 1) if record.grading else "")
         row_data.append(record.grading.presentation_deduction if record.grading else "")
 
@@ -181,7 +179,7 @@ def write_details_sheet(wb: Workbook, batch_result: GradingReport) -> Worksheet:
         "维度评语",
         "亮点",
         "改进建议",
-        "字数",
+        "字数（含标点，不含标题；［疑字］计1字，空白不计）",
     ]
     ws.append(headers)
     _apply_header_style(ws, 1, len(headers))
@@ -203,7 +201,7 @@ def write_details_sheet(wb: Workbook, batch_result: GradingReport) -> Worksheet:
                 cs.comment,
                 "\n".join(record.grading.highlights) if first else "",
                 "\n".join(record.grading.suggestions) if first else "",
-                record.grading.word_count or "" if first else "",
+                (record.grading.word_count if record.grading.word_count is not None else "") if first else "",
             ]
             ws.append(row)
             row_idx = ws.max_row

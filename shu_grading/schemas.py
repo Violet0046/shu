@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from .utils.word_count import count_essay_words
 
 
 # ============ 评分相关枚举 ============
@@ -77,8 +79,14 @@ class GradingResult(BaseModel):
     highlights: list[str] = Field(default_factory=list)
     suggestions: list[str] = Field(default_factory=list)
     word_count: int | None = None
+    essay_title: str = Field(default="", description="作文标题，与正文分开，不计入字数")
     transcription: str = Field(default="", description="忠实转写正文，疑字标记，不润色")
     presentation_deduction: float = Field(default=0, ge=0, le=100, description="教师卷面扣分，AI 不填写")
+
+    @model_validator(mode="after")
+    def calculate_word_count(self):
+        self.word_count = count_essay_words(self.transcription) if self.transcription.strip() else None
+        return self
 
 class ReportRecord(BaseModel):
     """单份答卷的成绩报告记录。"""

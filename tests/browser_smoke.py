@@ -89,11 +89,18 @@ def main(output: Path):
                 page.get_by_role('button', name='提交并录入下一位').click()
                 page.locator('.directory-item[data-action=directory-student]').first.click()
                 page.locator('#review-form').wait_for(timeout=15000)
+                assert page.locator('.sticky-actions button').all_text_contents() == ['确认完成','AI 重审']
+                assert '含标点，不含标题' in page.locator('.word-count').inner_text()
+                assert page.get_by_role('button', name='阅卷首页').count() == 0
+                page.get_by_role('button', name='账户菜单').hover()
+                assert page.locator('.account-dropdown').is_visible()
+                assert page.locator('.account-dropdown button').all_text_contents() == ['我的班级','评分标准','退出登录']
+                page.locator('h1').hover()
                 page.get_by_text('我接过她手里的［疑字］', exact=False).wait_for()
                 page.locator('#presentation-deduction').fill('2')
                 page.locator('[data-score="0"]').fill('25')
                 page.locator('#review-comment').fill('老师修改的评语：选材具体，请继续补充细节。')
-                page.get_by_role('button', name='确认并下一位').click()
+                page.get_by_role('button', name='确认完成').click()
                 page.wait_for_function("document.querySelector('#task-count').textContent.includes('已确认 1 份')")
                 page.locator('#toast').wait_for(state='hidden', timeout=7000)
                 assert page.locator('#teacher-total').text_content() == '39'
@@ -149,10 +156,10 @@ def main(output: Path):
                     page.get_by_role('link', name='下载已确认成绩').click()
                 assert download.value.suggested_filename == 'grading-report.xlsx'
                 page.on('dialog', lambda dialog: dialog.accept())
-                page.get_by_role('button', name='重新评分', exact=True).click()
+                page.get_by_role('button', name='AI 重审', exact=True).click()
                 page.wait_for_function("document.querySelector('#review-comment')?.value.includes('老师修改的评语') && !document.querySelector('#review-form button[type=submit]').disabled")
                 assert page.locator('#review-comment').input_value().startswith('老师修改的评语')
-                page.locator('.account-menu summary').click()
+                page.get_by_role('button',name='账户菜单').hover()
                 page.get_by_role('button', name='评分标准', exact=True).click()
                 page.locator('.task-row').filter(has_text='我的记叙文标准').get_by_role('button', name='编辑模板').click()
                 page.locator('#template-name').fill('更新后的标准')
@@ -174,7 +181,7 @@ def main(output: Path):
                 page.get_by_role('button',name='保存班级').click()
                 page.locator('#dialog').wait_for(state='hidden')
                 # 实名任务：目录搜索、状态、连续录入、完成录入与复核分开。
-                page.get_by_role('button',name='阅卷首页',exact=True).click()
+                page.locator('.brand').click()
                 page.get_by_role('button',name='创建阅卷任务',exact=True).click()
                 assert page.locator('#template-select option:checked').text_content() == '更新后的标准'
                 page.locator('#task-title').fill('班级测验 · 连续录入')
@@ -205,6 +212,12 @@ def main(output: Path):
                 page.get_by_role('button',name='提交并录入下一位').click()
                 page.wait_for_function("document.querySelector('#task-count').textContent.includes('录入 2 / 2')")
                 assert page.locator('[data-action=return-entry], [data-action=intake], [data-action=sync-class]').count()==0
+                page.wait_for_function("state.task.submissions.every(s=>s.status==='ready')")
+                page.locator('.directory-item[data-action=directory-student]').first.click()
+                page.get_by_role('button',name='确认并下一位',exact=True).click()
+                page.get_by_role('button',name='确认完成',exact=True).wait_for()
+                page.get_by_role('button',name='确认完成',exact=True).click()
+                page.wait_for_function("state.task.submissions.every(s=>s.confirmed)")
                 assert not errors, errors
                 # 手机入口由真实 API 签发；使用独立浏览器上下文验证无登录拍照。
                 import os

@@ -104,10 +104,14 @@ a { color:var(--blue); }
 .subject h2 { font-size:26px; margin:16px 0 12px; }
 .subject.available { border-top:3px solid var(--blue); }
 .subject.future { background:#f8fafc; }
-.account-menu { position:relative; }
-.account-menu summary { list-style:none; cursor:pointer; color:var(--blue); padding:9px 12px; }
-.account-menu[open] > div { position:absolute; right:0; top:42px; z-index:15; background:white; box-shadow:0 8px 30px #213b5b22; border:1px solid var(--line); border-radius:8px; min-width:180px; padding:8px; }
-.account-menu button { width:100%; text-align:left; border:0; }
+.account-menu { position:relative; padding:6px 0; }
+.account-avatar { width:44px; height:44px; padding:8px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.account-dropdown { display:none; position:absolute; right:0; top:100%; z-index:15; background:white; box-shadow:0 8px 30px #213b5b22; border:1px solid var(--line); border-radius:10px; min-width:180px; padding:8px; }
+.account-menu:hover .account-dropdown,.account-menu:focus-within .account-dropdown,.account-menu.is-open .account-dropdown { display:block; }
+.account-dropdown button { width:100%; text-align:left; border:0; }
+.word-count { color:var(--muted); font-size:13px; }
+.essay-title { text-align:center; }
+
 .resource-tabs { display:flex; gap:10px; margin-bottom:22px; }
 .task-layout { display:grid; grid-template-columns:224px minmax(0,1fr); gap:22px; align-items:start; }
 .task-directory { position:sticky; top:20px; padding:18px; }
