@@ -62,6 +62,8 @@ def main(output: Path):
                 page.get_by_role('button',name='账户菜单').hover()
                 page.locator('.admin-account-link').click()
                 page.get_by_text('今日模型调用',exact=True).wait_for()
+                assert '正常' in page.locator('.grading-service-status').inner_text()
+                assert page.get_by_role('heading',name='工作进程',exact=True).count() == 0
                 page.screenshot(path=str(output/'web-admin-overview.png'),full_page=True)
                 page.get_by_role('button',name='账户管理',exact=True).click()
                 page.get_by_role('button',name='创建教师账户',exact=True).click()
@@ -129,7 +131,8 @@ def main(output: Path):
                 page.get_by_role('button', name='账户菜单').hover()
                 assert page.locator('.account-dropdown').is_visible()
                 assert '验收老师' in page.locator('.account-profile').inner_text()
-                assert '管理员' in page.locator('.account-profile').inner_text()
+                assert page.locator('.account-profile').inner_text() == '验收老师'
+                assert page.locator('.admin-account-link').evaluate('(el)=>getComputedStyle(el).color') == 'rgb(251, 114, 153)'
                 assert page.locator('.account-avatar').get_attribute('title') is None
                 page.screenshot(path=str(output/'web-account-profile.png'), full_page=True)
                 assert page.locator('.account-dropdown > button').all_text_contents() == ['我的班级','评分标准','退出登录']

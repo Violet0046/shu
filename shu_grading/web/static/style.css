@@ -202,7 +202,8 @@ body.viewing-image { overflow:hidden; }
 @media(max-width:1000px) { .assignment-popover { left:0; top:100%; width:min(640px,calc(100vw - 64px)); } }
 
 .admin-badge { display:inline-block; padding:2px 8px; color:#805709; background:#fff4d6; border-radius:6px; font-size:12px; white-space:nowrap; }
-.account-profile .admin-account-link { display:flex; flex-direction:column; align-items:center; gap:6px; margin:0; }
+.account-profile .admin-account-link { margin:0; padding:0; background:transparent; color:#fb7299; border:0; box-shadow:none; }
+.account-profile .admin-account-link:hover,.account-profile .admin-account-link:focus-visible { background:transparent; color:#f25d8e; }
 .admin-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .admin-metric { background:#f3f6fb; padding:18px; border-radius:10px; }
 .admin-metric span { color:var(--muted); display:block; }
@@ -226,3 +227,5 @@ body.viewing-image { overflow:hidden; }
 #admin-account-filter { flex-wrap:nowrap; max-width:460px; flex:1; }
 #admin-account-filter input { flex:1; }
 #admin-account-filter button { flex-shrink:0; }
+
+.grading-service-status { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:24px; padding:16px; border:1px solid var(--line); border-radius:10px; }
