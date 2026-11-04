@@ -42,6 +42,22 @@ python -m shu_grading.backend.worker --concurrency 2
 
 ## 模型配置
 
+### 豆包 Seed 2.1 Lite（Responses 接口）
+
+```dotenv
+SHU_AI_PROVIDER=doubao
+SHU_AI_MODEL=doubao-seed-2-1-lite-260915
+ARK_API_KEY=填写火山方舟密钥
+ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+SHU_WEB_MAX_TOKENS=6000
+```
+
+豆包使用独立适配器，请求 `/responses`，图片 `detail=high`，`thinking.type=disabled`，不启用联网搜索或其他工具。后台等待完整结果后保存，不使用流式传输。JSON 输出由评分提示词约束；不会发送 Chat Completions 的 `response_format`。输入、输出、缓存命中及思考 token 使用 Responses 对应的用量字段记录。请求关闭服务商响应存储（`store=false`），本地追踪仍正常保留。
+
+`ARK_BASE_URL` 填 API 根地址，不包含末尾 `/responses`。豆包只读取 `ARK_API_KEY` 和 `ARK_BASE_URL`，不会误用旧 MiniMax 的 `OPENAI_*` 配置。`SHU_REASONING_EFFORT` 对该豆包适配器不生效，思考固定关闭。更新代码后需使用服务虚拟环境重新安装，并重启 web/worker。
+
+### 其他模型
+
 模型密钥只配置在服务器的工作进程，不发送给浏览器：
 
 ```dotenv

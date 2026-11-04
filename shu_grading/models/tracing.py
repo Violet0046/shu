@@ -32,8 +32,8 @@ def normalize_usage(provider, raw, supplied):
     def number(*values):
         return next((v for v in values if isinstance(v, int) and not isinstance(v, bool) and v >= 0), None)
     usage = numeric_usage(raw)
-    prompt_details = usage.get('prompt_tokens_details')
-    completion_details = usage.get('completion_tokens_details')
+    prompt_details = usage.get('prompt_tokens_details') or usage.get('input_tokens_details')
+    completion_details = usage.get('completion_tokens_details') or usage.get('output_tokens_details')
     prompt_details = prompt_details if isinstance(prompt_details, dict) else {}
     completion_details = completion_details if isinstance(completion_details, dict) else {}
     inp = number(usage.get('prompt_tokens'), usage.get('input_tokens'), supplied.get('input_tokens'))
@@ -65,6 +65,9 @@ async def call_model(provider, *, purpose='grading', **kwargs):
         parameters.update(thinking='adaptive', reasoning_effort=getattr(provider,'reasoning_effort','low'))
     elif getattr(provider, 'model_name', '').lower() == 'minimax-m3':
         parameters.update(thinking='disabled')
+    if provider.name == 'doubao':
+        parameters.update(api='responses',thinking='disabled',image_detail='high',
+                          max_output_tokens=parameters.pop('max_tokens',None),stream=False,store=False)
     store.execute('''INSERT INTO model_calls(id,job_id,attempt_id,purpose,provider,model,started,status,parameters,messages)
         VALUES(?,?,?,?,?,?,?,'processing',?,?)''', (cid,job['id'],job['lease_token'],purpose,provider.name,
         getattr(provider,'model_name',''),time.time(),dumps(parameters),dumps(messages)))

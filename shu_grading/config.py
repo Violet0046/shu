@@ -39,6 +39,8 @@ class Settings:
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
     openai_base_url: str | None = None
+    ark_api_key: str | None = None
+    ark_base_url: str | None = None
     ollama_host: str = "http://localhost:11434"
 
     # 通用
@@ -61,10 +63,12 @@ def load_settings() -> Settings:
 
     return Settings(
         ai_provider=provider,  # type: ignore[arg-type]
-        ai_model=os.getenv("SHU_AI_MODEL", "claude-sonnet-4-5"),
+        ai_model=os.getenv("SHU_AI_MODEL", "doubao-seed-2-1-lite-260915" if provider == 'doubao' else "claude-sonnet-4-5"),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         openai_base_url=os.getenv("OPENAI_BASE_URL"),
+        ark_api_key=os.getenv("ARK_API_KEY"),
+        ark_base_url=os.getenv("ARK_BASE_URL") or None,
         ollama_host=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
         max_tokens=int(os.getenv("SHU_MAX_TOKENS", "2048")),
         temperature=float(os.getenv("SHU_TEMPERATURE", "0.1")),

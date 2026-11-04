@@ -11,7 +11,8 @@ from ..config import Settings
 from .base import ModelProvider
 from .claude import ClaudeProvider
 from .ollama import OllamaProvider
-from .openai import DoubaoProvider, OpenAIProvider
+from .openai import OpenAIProvider
+from .doubao import DoubaoProvider
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,8 @@ def create_provider(settings: Settings) -> ModelProvider:
     elif provider_name == "doubao":
         return DoubaoProvider(
             model_name=model_name,
-            api_key=settings.openai_api_key,
-            base_url=settings.openai_base_url,
+            api_key=settings.ark_api_key,
+            base_url=settings.ark_base_url,
             max_tokens=settings.max_tokens,
             temperature=settings.temperature,
         )

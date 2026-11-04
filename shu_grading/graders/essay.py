@@ -207,6 +207,8 @@ async def grade_essay(
     # No repair call can recover text that was never generated or was cut off.
     if response.finish_reason in ('length', 'max_tokens'):
         return None, '模型输出达到上限，评分正文未完整生成。请管理员提高输出上限或降低思考档位后再重试。'
+    if response.finish_reason in ('incomplete','refusal','content_filter'):
+        return None, '模型未返回评分正文：响应未完成或被拒绝，请管理员检查调用记录。'
     if not response.content.strip():
         return None, '模型未返回评分正文。请管理员检查输出预算、思考档位和模型响应后再重试。'
 

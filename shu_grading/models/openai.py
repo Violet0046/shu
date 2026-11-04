@@ -1,6 +1,7 @@
 """OpenAI 兼容 provider.
 
-支持 OpenAI、Azure OpenAI、DeepSeek、豆包（通过火山引擎方舟）等所有 OpenAI 兼容接口。
+支持 OpenAI、DeepSeek、MiniMax 等 OpenAI 兼容 Chat Completions 接口。
+豆包 Responses 接口使用独立的 doubao.py。
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenAIProvider(ModelProvider):
-    """OpenAI 兼容 provider（含豆包、DeepSeek 等）."""
+    """OpenAI 兼容 Chat Completions provider。"""
 
     name = "openai"
 
@@ -133,32 +134,4 @@ class OpenAIProvider(ModelProvider):
             model=self.model_name,
             raw=response,
             finish_reason=response.choices[0].finish_reason,
-        )
-
-
-class DoubaoProvider(OpenAIProvider):
-    """豆包（字节跳动火山引擎）provider,继承 OpenAI 实现.
-
-    配置示例:
-        OPENAI_API_KEY=xxx (方舟 API key)
-        OPENAI_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
-        SHU_AI_MODEL=doubao-1-5-vision-pro-32k
-    """
-
-    name = "doubao"
-
-    def __init__(
-        self,
-        model_name: str = "doubao-1-5-vision-pro-32k",
-        api_key: str | None = None,
-        base_url: str | None = None,
-        **kwargs: Any,
-    ) -> None:
-        if not base_url:
-            base_url = "https://ark.cn-beijing.volces.com/api/v3"
-        super().__init__(
-            model_name=model_name,
-            api_key=api_key,
-            base_url=base_url,
-            **kwargs,
         )
