@@ -275,6 +275,11 @@ def main(output: Path):
                 phone.add_init_script("Object.defineProperty(crypto,'randomUUID',{value:undefined})")
                 phone.goto(pair['url'])
                 phone.get_by_text('拍摄一份作文',exact=True).wait_for()
+                assert phone.locator('a.brand').count()==0
+                capture_url=phone.url
+                phone.locator('.brand').click()
+                assert phone.url==capture_url
+                assert phone.locator('#upload-form').is_visible()
                 assert phone.get_by_text('拍照',exact=True).is_visible()
                 phone.locator('#image-file').set_input_files(str(image))
                 phone.get_by_role('button',name='提交并拍下一份').click()
@@ -302,6 +307,9 @@ def main(output: Path):
                 assert phone.locator('#upload-form').count()==0
                 phone.reload()
                 phone.get_by_role('heading',name='拍照入口不可用',exact=True).wait_for()
+                assert phone.locator('a.brand').count()==0
+                phone.locator('.brand').click()
+                assert phone.locator('#auth-form').count()==0
                 assert phone.locator('#upload-form').count()==0
                 page.get_by_role('button',name='手机扫码拍照',exact=True).click()
                 page.locator('#dialog').wait_for(state='visible')
