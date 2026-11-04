@@ -85,17 +85,31 @@ def main(output: Path):
                 page.unroute('**/api/health')
                 page.evaluate('checkWorkerHealth(true)')
                 assert not page.locator('#worker-notice').is_visible()
+                page.locator('.task-title-wrap h1').hover()
+                assert page.locator('#assignment-popover').is_visible()
+                assert '那一刻，我长大了' in page.locator('#assignment-popover').inner_text()
+                page.screenshot(path=str(output/'web-task-requirements.png'), full_page=True)
+                page.get_by_role('button',name='下载已确认成绩').click()
+                page.locator('#notice-dialog').get_by_text('还没有可导出的已确认成绩').wait_for()
+                assert '/api/tasks/' not in page.url
+                page.screenshot(path=str(output/'web-download-notice.png'), full_page=True)
+                page.locator('#notice-dialog').get_by_role('button',name='知道了').click()
                 page.locator('#image-file').set_input_files(str(image))
                 page.get_by_role('button', name='提交并录入下一位').click()
                 page.locator('.directory-item[data-action=directory-student]').first.click()
                 page.locator('#review-form').wait_for(timeout=15000)
                 assert page.locator('.sticky-actions button').all_text_contents() == ['确认完成','AI 重审']
-                assert '含标点，不含标题' in page.locator('.word-count').inner_text()
+                assert '含标点，不含标题' in page.locator('.paper-toolbar .word-count').inner_text()
+                assert page.locator('.paper-hint').inner_text() == '转写不润色、不自动纠错；［疑字］请核对原图'
                 assert page.get_by_role('button', name='阅卷首页').count() == 0
                 page.get_by_role('button', name='账户菜单').hover()
                 assert page.locator('.account-dropdown').is_visible()
+                assert page.locator('.account-profile').inner_text() == '验收老师'
+                assert page.locator('.account-avatar').get_attribute('title') is None
+                page.screenshot(path=str(output/'web-account-profile.png'), full_page=True)
                 assert page.locator('.account-dropdown button').all_text_contents() == ['我的班级','评分标准','退出登录']
                 page.locator('h1').hover()
+                page.screenshot(path=str(output/'web-paper-toolbar.png'), full_page=True)
                 page.get_by_text('我接过她手里的［疑字］', exact=False).wait_for()
                 page.locator('#presentation-deduction').fill('2')
                 page.locator('[data-score="0"]').fill('25')
@@ -106,6 +120,7 @@ def main(output: Path):
                 assert page.locator('#teacher-total').text_content() == '39'
                 page.get_by_role('button',name='原图',exact=True).click()
                 page.locator('#original-image').wait_for()
+                assert page.locator('.paper-hint').inner_text() == '点击图片后，可按住 Ctrl 用滚轮缩放'
                 page.screenshot(path=str(output/'web-v3-review.png'), full_page=True)
                 page.locator('#original-image').click()
                 page.locator('#viewer-image').wait_for()
@@ -153,10 +168,11 @@ def main(output: Path):
                 page.get_by_role('button',name='关闭原图',exact=True).click()
                 assert not page.locator('#image-viewer').is_visible()
                 with page.expect_download() as download:
-                    page.get_by_role('link', name='下载已确认成绩').click()
-                assert download.value.suggested_filename == 'grading-report.xlsx'
+                    page.get_by_role('button', name='下载已确认成绩').click()
+                assert download.value.suggested_filename == '高一记叙文 · 逐份阅卷验收.xlsx'
                 page.on('dialog', lambda dialog: dialog.accept())
                 page.get_by_role('button', name='AI 重审', exact=True).click()
+                page.locator('#notice-dialog').get_by_role('button',name='确认',exact=True).click()
                 page.wait_for_function("document.querySelector('#review-comment')?.value.includes('老师修改的评语') && !document.querySelector('#review-form button[type=submit]').disabled")
                 assert page.locator('#review-comment').input_value().startswith('老师修改的评语')
                 page.get_by_role('button',name='账户菜单').hover()
@@ -167,6 +183,7 @@ def main(output: Path):
                 page.get_by_text('更新后的标准', exact=True).wait_for()
                 page.locator('.task-row').filter(has_text='更新后的标准').get_by_role('button',name='设为默认').click()
                 page.locator('.task-row').filter(has_text='高中记叙文·50分制').get_by_role('button',name='删除',exact=True).click()
+                page.locator('#notice-dialog').get_by_role('button',name='确认',exact=True).click()
                 page.wait_for_function("!document.querySelector('#app').textContent.includes('高中记叙文·50分制')")
                 page.get_by_role('button', name='我的班级', exact=True).click()
                 page.get_by_role('button', name='新建班级').click()

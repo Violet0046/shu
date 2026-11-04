@@ -179,3 +179,22 @@ body.viewing-image { overflow:hidden; }
   .subject h2 { font-size:22px; }
   .class-table-head,.class-row { grid-template-columns:90px minmax(0,1fr) 65px; gap:6px; }
 }
+
+/* Compact paper toolbar, task context and shared message dialogs. */
+.paper-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; margin:22px 0 12px; }
+.paper-toolbar .view-tabs { margin:0; flex-shrink:0; }
+.paper-toolbar .word-count { flex:1; min-width:180px; font-size:12px; line-height:1.7; }
+.paper-hint { margin:0 0 18px; }
+.task-title-wrap { position:relative; width:fit-content; }
+.task-title-wrap h1 { cursor:help; }
+.assignment-popover { display:none; position:absolute; z-index:20; left:calc(100% + 28px); top:0; width:clamp(300px,40vw,640px); max-height:45vh; overflow:auto; padding:20px; background:white; border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 36px #213b5b22; }
+.assignment-popover::before { content:''; position:absolute; right:100%; top:0; width:30px; height:100%; }
+.assignment-popover div { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; margin-top:10px; }
+.task-title-wrap:hover .assignment-popover,.task-title-wrap:focus-within .assignment-popover { display:block; }
+.account-dropdown { min-width:230px; padding:12px; }
+.account-profile { padding:12px 10px 18px; border-bottom:1px solid var(--line); margin-bottom:8px; text-align:center; overflow-wrap:anywhere; }
+.notice-dialog { max-width:440px; padding:28px; box-shadow:0 18px 70px #213b5b33; color:#1b2d48; }
+.notice-dialog h2 { margin-top:0; }
+.notice-message { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; color:var(--muted); }
+.notice-actions { display:flex; justify-content:flex-end; gap:12px; margin-top:26px; }
+@media(max-width:1000px) { .assignment-popover { left:0; top:100%; width:min(640px,calc(100vw - 64px)); } }
