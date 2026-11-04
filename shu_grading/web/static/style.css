@@ -229,3 +229,12 @@ body.viewing-image { overflow:hidden; }
 #admin-account-filter button { flex-shrink:0; }
 
 .grading-service-status { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:24px; padding:16px; border:1px solid var(--line); border-radius:10px; }
+
+.dialog-close-form { position:absolute; top:12px; right:12px; margin:0; }
+.dialog-close { display:flex; align-items:center; justify-content:center; padding:6px; border:0; background:transparent; color:var(--muted); border-radius:50%; }
+.dialog-close:hover { background:#edf2fa; color:#1b2d48; }
+#dialog-content > h2:first-child { padding-right:30px; }
+.pair-footer { display:flex; align-items:center; gap:12px; margin-top:18px; }
+.pair-footer input { flex:1; }
+.pair-footer button { flex-shrink:0; }
+@media(max-width:600px) { .pair-footer { flex-wrap:wrap; } .pair-footer input { flex-basis:100%; } }

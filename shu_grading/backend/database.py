@@ -74,6 +74,8 @@ class Store:
             CREATE TABLE IF NOT EXISTS account_audit(id TEXT PRIMARY KEY,user_id TEXT,action TEXT,created REAL);
             """)
             db.execute('BEGIN IMMEDIATE')
+            if 'deleted_at' not in {r['name'] for r in db.execute('PRAGMA table_info(tasks)')}:
+                db.execute('ALTER TABLE tasks ADD COLUMN deleted_at REAL')
             if 'is_admin' not in {r['name'] for r in db.execute('PRAGMA table_info(users)')}:
                 db.execute('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0')
             db.execute('''CREATE TABLE IF NOT EXISTS admin_events(
@@ -118,6 +120,7 @@ class Store:
                 db.execute("UPDATE submissions SET status='pending' WHERE id=?", (row['id'],))
             db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(2,?)', (time.time(),))
             db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(3,?)', (time.time(),))
+            db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(4,?)', (time.time(),))
 
     @contextmanager
     def connect(self):

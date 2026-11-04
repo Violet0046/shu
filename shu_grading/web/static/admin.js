@@ -3,7 +3,7 @@ const adminState={tab:'overview',offset:0,q:'',status:'',model:'',start:'',end:'
 const metric=n=>n===null||n===undefined?'未提供':Number(n).toLocaleString();
 const when=n=>n?new Date(n*1000).toLocaleString():'—';
 const seconds=(start,end)=>end?Math.max(0,end-start).toFixed(1)+' 秒':'—';
-const jobLabel=s=>({pending:'等待处理',processing:'正在处理',succeeded:'已完成',failed:'失败',interrupted:'已中断',unknown:'进程中断／结果未知',retry_scheduled:'已安排重试',lease_expired:'租约失效'})[s]||s;
+const jobLabel=s=>({cancelled:'任务已删除',pending:'等待处理',processing:'正在处理',succeeded:'已完成',failed:'失败',interrupted:'已中断',unknown:'进程中断／结果未知',retry_scheduled:'已安排重试',lease_expired:'租约失效'})[s]||s;
 function adminTable(headers,rows){return `<div class="admin-table-scroll"><table class="admin-table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${headers.length}" class="empty">暂无记录</td></tr>`}</tbody></table></div>`;}
 function adminPager(total){return `<div class="admin-pager"><span class="muted">共 ${total} 条 · 第 ${Math.floor(adminState.offset/50)+1} 页</span>${action('admin-prev','上一页',true,adminState.offset?'':'disabled')}${action('admin-next','下一页',true,adminState.offset+50<total?'':'disabled')}</div>`;}
 async function showAdmin(tab=adminState.tab){

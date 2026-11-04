@@ -27,6 +27,10 @@ def router(services):
     def detail(tid: str, request: Request):
         return services.tasks.detail(user(request), tid)
 
+    @routes.delete('/tasks/{tid}')
+    def delete_task(tid: str, request: Request):
+        return services.tasks.delete(user(request), tid)
+
     @routes.get('/tasks/{tid}/export')
     def report(tid: str, request: Request, confirmed_only: bool=True):
         buffer = services.reports.export(user(request), tid, confirmed_only)

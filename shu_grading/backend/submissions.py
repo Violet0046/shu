@@ -15,12 +15,12 @@ class SubmissionService:
 
     def get(self, uid, sid):
         row = self.store.one('''SELECT s.* FROM submissions s JOIN tasks t ON t.id=s.task_id
-            WHERE s.id=? AND t.owner=?''', (sid, uid))
+            WHERE s.id=? AND t.owner=? AND t.deleted_at IS NULL''', (sid, uid))
         if not row:
             raise ServiceError(404, '答卷不存在')
         return row
 
-    def submit(self, uid, tid, body):
+    def submit(self, uid, tid, body, capture_token=None):
         self.tasks.get(uid, tid)
         prepared = self.files.prepare(body.image)
         fingerprint = hashlib.sha256(dumps([prepared.digest, body.student_id, body.paper_number.strip()]).encode()).hexdigest()
@@ -29,9 +29,13 @@ class SubmissionService:
         try:
             with self.store.connect() as db:
                 db.execute('BEGIN IMMEDIATE')
-                task = db.execute('SELECT * FROM tasks WHERE id=? AND owner=?', (tid, uid)).fetchone()
+                task = db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted_at IS NULL', (tid, uid)).fetchone()
                 if not task:
                     raise ServiceError(404, '任务不存在')
+                if capture_token is not None and not db.execute(
+                        'SELECT token FROM pairs WHERE token=? AND task_id=? AND expires>?',
+                        (capture_token,tid,time.time())).fetchone():
+                    raise ServiceError(403, '拍照入口已关闭或过期，请在电脑端重新开启')
                 owner = db.execute('SELECT active FROM users WHERE id=?', (uid,)).fetchone()
                 if not owner or not owner['active']:
                     raise ServiceError(403, '账号已停用')
@@ -82,7 +86,9 @@ class SubmissionService:
         row = self.get(uid, sid)
         with self.store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            task = db.execute('SELECT * FROM tasks WHERE id=? AND owner=?', (row['task_id'], uid)).fetchone()
+            task = db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted_at IS NULL', (row['task_id'], uid)).fetchone()
+            if not task:
+                raise ServiceError(404, '任务不存在')
             latest = db.execute('SELECT status,image,confirmed FROM submissions WHERE id=?', (sid,)).fetchone()
             if latest['confirmed']:
                 raise ServiceError(409, '已确认的成绩不能进行 AI 重审')

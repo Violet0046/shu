@@ -30,7 +30,7 @@ class GradingWorker:
     async def _grade(self, job):
         snapshot = job['snapshot']
         owner = self.services.store.one('''SELECT u.active FROM users u JOIN tasks t ON t.owner=u.id
-            JOIN submissions s ON s.task_id=t.id WHERE s.id=?''', (job['submission_id'],))
+            JOIN submissions s ON s.task_id=t.id WHERE s.id=? AND t.deleted_at IS NULL''', (job['submission_id'],))
         if not owner or not owner['active']:
             raise GradingFailure('账号已停用，无法处理此答卷')
         grader = self.services.registry.resolve(snapshot['task_type'], snapshot['grader_version'])
