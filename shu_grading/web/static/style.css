@@ -200,3 +200,29 @@ body.viewing-image { overflow:hidden; }
 .notice-message { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; color:var(--muted); }
 .notice-actions { display:flex; justify-content:flex-end; gap:12px; margin-top:26px; }
 @media(max-width:1000px) { .assignment-popover { left:0; top:100%; width:min(640px,calc(100vw - 64px)); } }
+
+.admin-badge { display:inline-block; padding:2px 8px; color:#805709; background:#fff4d6; border-radius:6px; font-size:12px; white-space:nowrap; }
+.account-profile .admin-account-link { display:flex; flex-direction:column; align-items:center; gap:6px; margin:0; }
+.admin-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.admin-metric { background:#f3f6fb; padding:18px; border-radius:10px; }
+.admin-metric span { color:var(--muted); display:block; }
+.admin-metric strong { display:block; font-size:26px; margin-top:6px; color:var(--blue); }
+.admin-table-scroll { overflow:auto; }
+.admin-table { width:100%; border-collapse:collapse; font-size:14px; }
+.admin-table th,.admin-table td { padding:12px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+.admin-table th { background:#f3f6fb; white-space:nowrap; }
+.admin-table button { padding:6px 10px; white-space:nowrap; }
+.admin-table tr:hover td { background:#f9fbff; }
+.admin-pager { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:20px; }
+.admin-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; margin-bottom:20px; }
+.admin-filter .field { flex:1; min-width:140px; margin:0; }
+.admin-filter button { margin-bottom:0; }
+.admin-section { margin-top:28px; }
+.trace-attempt { border-top:1px solid var(--line); margin-top:20px; padding-top:12px; }
+.trace-call { padding:14px; border:1px solid var(--line); border-radius:8px; margin:12px 0; }
+.trace-call pre { background:#f3f6fb; padding:14px; white-space:pre-wrap; overflow-wrap:anywhere; max-height:360px; overflow:auto; font-size:13px; }
+@media(max-width:700px) { .admin-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+#admin-account-filter { flex-wrap:nowrap; max-width:460px; flex:1; }
+#admin-account-filter input { flex:1; }
+#admin-account-filter button { flex-shrink:0; }

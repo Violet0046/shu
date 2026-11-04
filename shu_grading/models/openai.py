@@ -8,12 +8,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
 
 from .base import ChatMessage, ChatResponse, ModelProvider
 
@@ -44,7 +38,7 @@ class OpenAIProvider(ModelProvider):
 
         # Avoid optional Brotli decoders incompatible with some SDK transports.
         self.client = AsyncOpenAI(
-            api_key=api_key, base_url=base_url,
+            api_key=api_key, base_url=base_url, max_retries=0,
             default_headers={"Accept-Encoding": "gzip, deflate"},
         )
         self.base_url = base_url
@@ -59,12 +53,6 @@ class OpenAIProvider(ModelProvider):
         return errors
 
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        retry=retry_if_exception_type((TimeoutError, ConnectionError)),
-        reraise=True,
-    )
     async def chat(
         self,
         messages: list[ChatMessage],
@@ -129,9 +117,9 @@ class OpenAIProvider(ModelProvider):
         content_str = response.choices[0].message.content or ""
 
         usage = {
-            "input_tokens": response.usage.prompt_tokens if response.usage else 0,
+            "input_tokens": response.usage.prompt_tokens if response.usage else None,
             "output_tokens": (
-                response.usage.completion_tokens if response.usage else 0
+                response.usage.completion_tokens if response.usage else None
             ),
         }
 

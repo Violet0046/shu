@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..models.base import ChatMessage, ImageInput, ModelProvider
+from ..models.tracing import call_model
 from ..prompts_loader import load_prompt
 from ..schemas import (
     CriterionScore,
@@ -192,7 +193,7 @@ async def grade_essay(
 
     # 4. 调用 AI
     try:
-        response = await model.chat(
+        response = await call_model(model,
             messages=messages,
             json_mode=json_mode,
         )

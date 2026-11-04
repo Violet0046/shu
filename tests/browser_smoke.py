@@ -37,6 +37,7 @@ def main(output: Path):
         paper.save(image)
         app = create_app(root / 'data', provider_factory=lambda: FakeProvider(),start_worker=True)
         app.state.services.auth.create_account('验收老师','browser-test-password')
+        app.state.services.auth.set_admin('验收老师',True)
         sock = socket.socket()
         sock.bind(('127.0.0.1', 0))
         port = sock.getsockname()[1]
@@ -58,6 +59,29 @@ def main(output: Path):
                 page.locator('[name=password]').fill('browser-test-password')
                 page.get_by_role('button', name='登录',exact=True).click()
                 page.get_by_role('button', name='创建阅卷任务', exact=True).wait_for()
+                page.get_by_role('button',name='账户菜单').hover()
+                page.locator('.admin-account-link').click()
+                page.get_by_text('今日模型调用',exact=True).wait_for()
+                page.screenshot(path=str(output/'web-admin-overview.png'),full_page=True)
+                page.get_by_role('button',name='账户管理',exact=True).click()
+                page.get_by_role('button',name='创建教师账户',exact=True).click()
+                page.locator('#admin-create-form [name=username]').fill('浏览器测试老师')
+                page.locator('#admin-create-form [name=password]').fill('created-test-password')
+                page.locator('#admin-create-form [name=recipient]').fill('后台创建验收')
+                page.locator('#admin-create-form').get_by_role('button',name='创建账户',exact=True).click()
+                page.locator('#notice-dialog').get_by_role('button',name='知道了').click()
+                account=page.locator('.admin-table tr').filter(has_text='浏览器测试老师').first
+                account.get_by_role('button',name='重置密码',exact=True).click()
+                page.locator('#admin-reset-form [name=password]').fill('reset-test-password')
+                page.locator('#admin-reset-form').get_by_role('button',name='确认重置',exact=True).click()
+                page.locator('#notice-dialog').get_by_role('button',name='知道了').click()
+                account=page.locator('.admin-table tr').filter(has_text='浏览器测试老师').first
+                account.get_by_role('button',name='停用',exact=True).click()
+                page.locator('#notice-dialog').get_by_role('button',name='确认',exact=True).click()
+                page.locator('#notice-dialog').get_by_role('button',name='知道了').click()
+                page.locator('.admin-table tr').filter(has_text='浏览器测试老师').first.get_by_role('button',name='启用',exact=True).wait_for()
+                page.screenshot(path=str(output/'web-admin-accounts.png'),full_page=True)
+                page.get_by_role('button',name='返回阅卷工作台',exact=True).click()
                 page.screenshot(path=str(output/'web-v3-home.png'), full_page=True)
                 page.get_by_role('button', name='创建阅卷任务', exact=True).click()
                 assert page.locator('#template-select option:checked').text_content() == '高中记叙文·50分制'
@@ -104,10 +128,11 @@ def main(output: Path):
                 assert page.get_by_role('button', name='阅卷首页').count() == 0
                 page.get_by_role('button', name='账户菜单').hover()
                 assert page.locator('.account-dropdown').is_visible()
-                assert page.locator('.account-profile').inner_text() == '验收老师'
+                assert '验收老师' in page.locator('.account-profile').inner_text()
+                assert '管理员' in page.locator('.account-profile').inner_text()
                 assert page.locator('.account-avatar').get_attribute('title') is None
                 page.screenshot(path=str(output/'web-account-profile.png'), full_page=True)
-                assert page.locator('.account-dropdown button').all_text_contents() == ['我的班级','评分标准','退出登录']
+                assert page.locator('.account-dropdown > button').all_text_contents() == ['我的班级','评分标准','退出登录']
                 page.locator('h1').hover()
                 page.screenshot(path=str(output/'web-paper-toolbar.png'), full_page=True)
                 page.get_by_text('我接过她手里的［疑字］', exact=False).wait_for()
@@ -253,6 +278,14 @@ def main(output: Path):
                 phone.locator('#toast').wait_for(state='hidden', timeout=7000)
                 phone.screenshot(path=str(output/'web-v3-mobile-capture.png'), full_page=True)
                 assert phone.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+                page.get_by_role('button',name='账户菜单').hover()
+                page.locator('.admin-account-link').click()
+                page.get_by_role('button',name='阅卷追踪',exact=True).click()
+                page.get_by_role('button',name='详情',exact=True).first.click()
+                page.locator('.trace-call').first.locator('summary').click()
+                page.get_by_text('服务商用量字段',exact=True).first.wait_for()
+                page.screenshot(path=str(output/'web-admin-trace-detail.png'),full_page=True)
+                assert not errors,errors
                 browser.close()
                 print('V3 browser workflow passed: named default, editable/deletable templates, editable classes, named directory, stable compact directory, minimal viewer, no drag/wheel movement, cursor-anchored Ctrl zoom and all close methods, transcription, image viewer, deduction/export, anonymous and mobile capture; no JavaScript errors.')
         finally:

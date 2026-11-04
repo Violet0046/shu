@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from ..backend.errors import ServiceError
 from ..backend.services import build_services
 from ..backend.worker import GradingWorker
-from .routes import auth, capture, resources, submissions, tasks
+from .routes import admin, auth, capture, resources, submissions, tasks
 
 
 def create_app(data_dir=None, provider_factory=None, start_worker=None, registry=None):
@@ -71,7 +71,7 @@ def create_app(data_dir=None, provider_factory=None, start_worker=None, registry
             response.headers['Cache-Control'] = 'no-store'
         return response
 
-    for module in (auth, resources, tasks, submissions, capture):
+    for module in (auth, resources, tasks, submissions, capture, admin):
         app.include_router(module.router(services))
 
     @app.get('/api/health')

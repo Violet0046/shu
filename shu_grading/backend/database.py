@@ -74,6 +74,18 @@ class Store:
             CREATE TABLE IF NOT EXISTS account_audit(id TEXT PRIMARY KEY,user_id TEXT,action TEXT,created REAL);
             """)
             db.execute('BEGIN IMMEDIATE')
+            if 'is_admin' not in {r['name'] for r in db.execute('PRAGMA table_info(users)')}:
+                db.execute('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0')
+            db.execute('''CREATE TABLE IF NOT EXISTS admin_events(
+                id TEXT PRIMARY KEY,actor TEXT,target TEXT,action TEXT,created REAL NOT NULL)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS model_calls(
+                id TEXT PRIMARY KEY,job_id TEXT NOT NULL,attempt_id TEXT NOT NULL,purpose TEXT,
+                provider TEXT,model TEXT,actual_model TEXT,started REAL NOT NULL,finished REAL,
+                status TEXT NOT NULL,request_id TEXT,error_type TEXT,error TEXT,
+                input_tokens INTEGER,output_tokens INTEGER,cached_tokens INTEGER,cache_write_tokens INTEGER,
+                reasoning_tokens INTEGER,usage TEXT,parameters TEXT,messages TEXT,response TEXT)''')
+            db.execute('CREATE INDEX IF NOT EXISTS model_calls_job ON model_calls(job_id,started)')
+            db.execute('CREATE INDEX IF NOT EXISTS model_calls_started ON model_calls(started)')
             if 'result_version_id' not in {r['name'] for r in db.execute('PRAGMA table_info(grading_jobs)')}:
                 db.execute('ALTER TABLE grading_jobs ADD COLUMN result_version_id TEXT REFERENCES versions(id)')
             user_columns = {r['name'] for r in db.execute('PRAGMA table_info(users)')}
@@ -105,6 +117,7 @@ class Store:
                            (secrets.token_hex(16), row['id'], dumps(snapshot), now, now, now))
                 db.execute("UPDATE submissions SET status='pending' WHERE id=?", (row['id'],))
             db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(2,?)', (time.time(),))
+            db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(3,?)', (time.time(),))
 
     @contextmanager
     def connect(self):

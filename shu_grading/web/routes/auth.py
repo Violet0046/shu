@@ -14,7 +14,7 @@ def router(services):
         result = services.auth.login(body.username, body.password, request.client.host if request.client else 'unknown')
         response.set_cookie(COOKIE, result['token'], httponly=True, samesite='strict',
                             secure=os.getenv('SHU_COOKIE_SECURE')=='1', max_age=7*86400)
-        return {'username': result['username']}
+        return services.store.one('SELECT username,is_admin FROM users WHERE username=?', (result['username'],))
 
     @routes.post('/logout')
     def logout(request: Request, response: Response):
@@ -24,6 +24,6 @@ def router(services):
 
     @routes.get('/me')
     def me(request: Request):
-        return services.store.one('SELECT username FROM users WHERE id=?', (user(request),))
+        return services.store.one('SELECT username,is_admin FROM users WHERE id=?', (user(request),))
 
     return routes

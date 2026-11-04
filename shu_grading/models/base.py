@@ -51,7 +51,7 @@ class ChatMessage:
 class ChatResponse:
     """模型回复."""
     content: str
-    usage: dict[str, int] = field(default_factory=dict)
+    usage: dict[str, int | None] = field(default_factory=dict)
     model: str = ""
     raw: Any = None  # 原始响应,用于调试
 

@@ -5,12 +5,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
 
 from .base import ChatMessage, ChatResponse, ModelProvider
 
@@ -42,7 +36,7 @@ class ClaudeProvider(ModelProvider):
         # 延迟导入,避免无 anthropic 包时启动失败
         from anthropic import AsyncAnthropic
 
-        self.client = AsyncAnthropic(api_key=api_key)
+        self.client = AsyncAnthropic(api_key=api_key, max_retries=0)
         self.max_tokens = max_tokens
         self.temperature = temperature
 
@@ -51,12 +45,6 @@ class ClaudeProvider(ModelProvider):
         return [] if self.client else ["Claude client 未初始化"]
 
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        retry=retry_if_exception_type((TimeoutError, ConnectionError)),
-        reraise=True,
-    )
     async def chat(
         self,
         messages: list[ChatMessage],

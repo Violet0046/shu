@@ -35,6 +35,16 @@ sudo -u shu env SHU_ENV_FILE=/etc/shu/shu.env /opt/shu/.venv/bin/shu-grading-adm
 
 密码在终端交互输入。其他账号命令参见上级目录的使用说明。
 
+首次设置管理员可以改用：
+
+```bash
+sudo -u shu env SHU_ENV_FILE=/etc/shu/shu.env /opt/shu/.venv/bin/shu-grading-admin create-user administrator --admin
+```
+
+已有账户使用同一命令前缀执行 `grant-admin 账号名` 授权，`revoke-admin 账号名` 撤销权限。权限变更后需重新登录。至少保留一个启用的管理员。
+
+管理员登录后，悬停头像，点击带“管理员”标识的账户名进入后台。日常创建、停用、启用、重置教师密码以及查看任务和模型用量都可在网页进行；服务器命令仍用于初始设置、授权和密码恢复。管理员可在后台重置自己的密码，随后需要重新登录，但不能停用自己。
+
 ## 常驻服务
 
 ```bash

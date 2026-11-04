@@ -7,6 +7,7 @@
 - 通过网页表单管理个人评分模板及班级名单。
 - 对照原图复核分数、评语和卷面扣分，导出已确认的 Excel 成绩。
 - 管理员分配账号；网页/API 与独立阅卷工作进程共享持久队列。
+- 管理员控制台管理教师账户，查看队列、工作进程和逐次模型调用的 token、缓存、耗时与错误。
 
 ## 开始使用
 
@@ -26,6 +27,8 @@ shu-grading-web
 该命令默认同时启动网页和阅卷服务，已排队的答卷会自动继续处理。服务器拆分部署使用 `python web_app.py --api-only`，并另行启动 `python -m shu_grading.backend.worker --concurrency 2`。
 
 打开 <http://127.0.0.1:8000>，使用管理员分配的账号登录。模型接口与密钥配置在服务器环境变量中。
+
+首次创建管理员可使用 `shu-grading-admin create-user administrator --admin`；已有账户使用 `shu-grading-admin grant-admin 账号名` 授权，随后重新登录。悬停头像，点击带管理员标识的账户名进入后台。之后可在网页管理教师账户。
 
 详细的配置、手机上传、账号管理和部署步骤见 [使用与部署说明](WEB_README.md)。
 

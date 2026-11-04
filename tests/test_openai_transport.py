@@ -7,12 +7,14 @@ from openai import _base_client
 
 from shu_grading.models.base import ChatMessage, ImageInput
 from shu_grading.models.openai import OpenAIProvider
+from shu_grading.models.tracing import normalize_usage
 
 
 @pytest.mark.parametrize('model', ['MiniMax-M3', 'MiniMax-M3.1-Flash', 'minimax-m3.1-flash', 'gpt-4o', 'MiniMax-future'])
 async def test_sdk_avoids_brotli_and_decodes_compressed_response(model):
     http = getattr(_base_client, 'httpx2', None) or _base_client.httpx
     provider = OpenAIProvider(model_name=model, api_key='test-only', base_url='https://example.invalid/v1')
+    assert provider.client.max_retries == 0
     requests = []
 
     def respond(request):
@@ -32,7 +34,9 @@ async def test_sdk_avoids_brotli_and_decodes_compressed_response(model):
                    'choices': [{'index': 0, 'message': {'role': 'assistant', 'content': '{"ok":true}',
                                                        'reasoning_content': 'Internal reasoning, not grading JSON'},
                                 'finish_reason': 'stop'}],
-                   'usage': {'prompt_tokens': 10, 'completion_tokens': 5, 'total_tokens': 15}}
+                   'usage': {'prompt_tokens': 10, 'completion_tokens': 5, 'total_tokens': 15,
+                             'prompt_tokens_details': {'cached_tokens': 8},
+                             'completion_tokens_details': {'reasoning_tokens': 2}}}
         return http.Response(200, headers={'content-encoding': 'gzip', 'content-type': 'application/json'},
                              content=gzip.compress(json.dumps(payload).encode()))
 
@@ -43,6 +47,9 @@ async def test_sdk_avoids_brotli_and_decodes_compressed_response(model):
         result = await provider.chat([ChatMessage('user', 'grade', [ImageInput(base64_data='AA==', media_type='image/png')])], json_mode=True)
         assert result.content == '{"ok":true}'
         assert result.usage == {'input_tokens': 10, 'output_tokens': 5}
+        usage = normalize_usage('openai', result.raw.usage, result.usage)
+        assert usage['cached_tokens'] == 8 and usage['reasoning_tokens'] == 2
+        assert usage['input_tokens'] == 10 and usage['output_tokens'] == 5
         assert len(requests) == 1
     finally:
         await provider.aclose()

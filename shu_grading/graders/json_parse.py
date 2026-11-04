@@ -149,7 +149,6 @@ async def repair_to_json(raw_text: str, model_provider: Any) -> dict[str, Any] |
 5. 不要 markdown 代码块包裹(不要输出 ```json ... ```)
 
 **需要保留的字段**(从原始输出提取):
-- identity.raw_name, identity.matched_name, identity.match_confidence, identity.candidates
 - total_score, criterion_scores, overall_comment, highlights, suggestions, essay_title, transcription
 
 **原始输出**:
@@ -160,7 +159,8 @@ async def repair_to_json(raw_text: str, model_provider: Any) -> dict[str, Any] |
 请只输出合法 JSON(从 {{ 开始,到 }} 结束):"""
 
     try:
-        response = await model_provider.chat(
+        from ..models.tracing import call_model
+        response = await call_model(model_provider, purpose='json_repair',
             messages=[
                 ChatMessage(
                     role="system",

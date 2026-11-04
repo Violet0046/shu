@@ -20,15 +20,22 @@ def main(argv=None):
         source.add_argument('--generate', action='store_true', help='生成随机密码，仅在本次输出')
         if command=='create-user':
             sub.add_argument('--recipient', default='', help='账号分配对象的管理员备注')
+            sub.add_argument('--admin', action='store_true', help='同时授予管理员权限')
     for command in ('disable-user','enable-user'):
         commands.add_parser(command).add_argument('username')
     commands.add_parser('list-users')
+    for command in ('grant-admin','revoke-admin'):
+        commands.add_parser(command).add_argument('username')
     args = parser.parse_args(argv)
     services = build_services(args.data_dir)
     try:
         if args.command=='list-users':
-            for user in services.store.all('SELECT username,active,recipient FROM users ORDER BY username'):
-                print(f"{user['username']}\t{'启用' if user['active'] else '停用'}\t{user['recipient']}")
+            for user in services.store.all('SELECT username,active,recipient,is_admin FROM users ORDER BY username'):
+                print(f"{user['username']}\t{'启用' if user['active'] else '停用'}\t{'管理员' if user['is_admin'] else '教师'}\t{user['recipient']}")
+            return 0
+        if args.command in ('grant-admin','revoke-admin'):
+            services.auth.set_admin(args.username, args.command=='grant-admin')
+            print('管理员权限已更新，请重新登录')
             return 0
         if args.command in ('create-user','reset-password'):
             if args.password_stdin:
@@ -41,6 +48,8 @@ def main(argv=None):
                     raise ServiceError(422, '两次密码不一致')
             if args.command=='create-user':
                 services.auth.create_account(args.username, password, args.recipient)
+                if args.admin:
+                    services.auth.set_admin(args.username, True)
             else:
                 services.auth.manage_account(args.username, password=password)
             print('账号已创建' if args.command=='create-user' else '密码已重置，旧会话与手机入口已失效')

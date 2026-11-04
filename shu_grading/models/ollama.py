@@ -10,12 +10,6 @@ import logging
 from typing import Any
 
 import httpx
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
 
 from .base import ChatMessage, ChatResponse, ModelProvider
 
@@ -76,12 +70,6 @@ class OllamaProvider(ModelProvider):
         return errors
 
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=30),
-        retry=retry_if_exception_type((httpx.ConnectError, TimeoutError)),
-        reraise=True,
-    )
     async def chat(
         self,
         messages: list[ChatMessage],

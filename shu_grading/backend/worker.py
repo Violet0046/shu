@@ -9,6 +9,7 @@ from contextlib import suppress
 
 from .errors import GradingFailure, LeaseLost, ServiceError
 from .grading.base import GradingInput
+from ..models.tracing import trace_context
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ class GradingWorker:
             return False
         logger.info('领取阅卷作业 %s，题型 %s，第 %s/%s 次尝试，开始调用评分实现',
                     job['id'], job['snapshot']['task_type'], job['attempts'], job['max_attempts'])
+        trace_token = trace_context.set((self.services.store, job))
         grade = asyncio.create_task(self._grade(job))
         heartbeat = asyncio.create_task(self._renew(job))
         try:
@@ -73,6 +75,7 @@ class GradingWorker:
                 task.cancel()
                 with suppress(asyncio.CancelledError, Exception):
                     await task
+            trace_context.reset(trace_token)
         return True
 
     async def run(self, concurrency=1):
