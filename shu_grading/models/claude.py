@@ -111,5 +111,6 @@ class ClaudeProvider(ModelProvider):
         }
 
         return ChatResponse(
-            content=content_str, usage=usage, model=self.model_name, raw=response
+            content=content_str, usage=usage, model=self.model_name, raw=response,
+            finish_reason=response.stop_reason,
         )

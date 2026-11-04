@@ -1,7 +1,4 @@
-【作文题目】
-{title}
-
-【题目说明】
+【作文题目与要求】
 {description}
 
 【评分标准】(总分 {max_score} 分,{grade_level})

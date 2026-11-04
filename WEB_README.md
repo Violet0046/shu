@@ -49,7 +49,8 @@ SHU_AI_PROVIDER=openai
 SHU_AI_MODEL=你的视觉模型名称
 OPENAI_API_KEY=由管理员填写
 OPENAI_BASE_URL=你的接口地址
-SHU_WEB_MAX_TOKENS=6000
+SHU_WEB_MAX_TOKENS=16384
+SHU_REASONING_EFFORT=low
 SHU_WORKER_CONCURRENCY=2
 SHU_JOB_LEASE_SECONDS=120
 SHU_JOB_MAX_ATTEMPTS=3
@@ -138,3 +139,5 @@ node --check shu_grading/web/static/app.js
 ```
 
 业务与架构测试使用模拟模型，不消耗真实模型额度。详细扩展契约及数据库说明见 [后端架构](BACKEND.md)。
+
+MiniMax-M3.1-Flash 的输出预算包含思考 token。建议先以 `SHU_REASONING_EFFORT=low` 和 `SHU_WEB_MAX_TOKENS=16384` 实测；这不是识别成功保证或固定消耗量。已有配置的 6000 不会被代码自动覆盖，需要修改后重启 worker。空正文或 `finish_reason=length` 时直接失败并提示配置问题，不进行 JSON 修复，也不自动重试；追踪保留本次实际用量和结束原因。

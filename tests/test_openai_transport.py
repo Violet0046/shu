@@ -24,7 +24,7 @@ async def test_sdk_avoids_brotli_and_decodes_compressed_response(model):
         assert body['model'] == model
         if model.lower() == 'minimax-m3.1-flash':
             assert body['thinking'] == {'type': 'adaptive'}
-            assert body['reasoning_effort'] == 'medium'
+            assert body['reasoning_effort'] == 'low'
         elif model == 'MiniMax-M3':
             assert body['thinking'] == {'type': 'disabled'}
         else:

@@ -26,6 +26,7 @@ class OpenAIProvider(ModelProvider):
         base_url: str | None = None,
         max_tokens: int = 2048,
         temperature: float = 0.1,
+        reasoning_effort: str = "low",
         **kwargs: Any,
     ) -> None:
         super().__init__(model_name, **kwargs)
@@ -34,6 +35,9 @@ class OpenAIProvider(ModelProvider):
                 "OpenAIProvider 需要 API key."
                 " 请设置 OPENAI_API_KEY 或传入 api_key 参数。"
             )
+        if reasoning_effort not in ('low','medium','high','xhigh','max'):
+            raise ValueError('SHU_REASONING_EFFORT 必须为 low/medium/high/xhigh/max')
+        self.reasoning_effort = reasoning_effort
         from openai import AsyncOpenAI
 
         # Avoid optional Brotli decoders incompatible with some SDK transports.
@@ -104,7 +108,7 @@ class OpenAIProvider(ModelProvider):
         model_id = self.model_name.lower()
         if model_id == "minimax-m3.1-flash":
             kwargs["extra_body"] = {"thinking": {"type": "adaptive"}}
-            kwargs["reasoning_effort"] = "medium"
+            kwargs["reasoning_effort"] = self.reasoning_effort
         elif model_id == "minimax-m3":
             kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
 
@@ -128,6 +132,7 @@ class OpenAIProvider(ModelProvider):
             usage=usage,
             model=self.model_name,
             raw=response,
+            finish_reason=response.choices[0].finish_reason,
         )
 
 

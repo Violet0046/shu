@@ -46,6 +46,7 @@ def create_provider(settings: Settings) -> ModelProvider:
         )
     elif provider_name == "openai":
         return OpenAIProvider(
+            reasoning_effort=settings.reasoning_effort,
             model_name=model_name,
             api_key=settings.openai_api_key,
             base_url=settings.openai_base_url,

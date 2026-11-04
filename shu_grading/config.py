@@ -44,6 +44,7 @@ class Settings:
     # 通用
     max_tokens: int = 2048
     temperature: float = 0.1
+    reasoning_effort: str = "low"
 
     # 数据目录
     data_dir: Path = field(default_factory=lambda: Path.home() / ".shu-grading")
@@ -67,5 +68,6 @@ def load_settings() -> Settings:
         ollama_host=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
         max_tokens=int(os.getenv("SHU_MAX_TOKENS", "2048")),
         temperature=float(os.getenv("SHU_TEMPERATURE", "0.1")),
+        reasoning_effort=os.getenv("SHU_REASONING_EFFORT", "low").strip().lower(),
         data_dir=data_dir,
     )

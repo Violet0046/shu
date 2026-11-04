@@ -62,7 +62,7 @@ async def call_model(provider, *, purpose='grading', **kwargs):
     for key in ('temperature', 'max_tokens'):
         parameters.setdefault(key, getattr(provider, key, None))
     if getattr(provider, 'model_name', '').lower() == 'minimax-m3.1-flash':
-        parameters.update(thinking='adaptive', reasoning_effort='medium')
+        parameters.update(thinking='adaptive', reasoning_effort=getattr(provider,'reasoning_effort','low'))
     elif getattr(provider, 'model_name', '').lower() == 'minimax-m3':
         parameters.update(thinking='disabled')
     store.execute('''INSERT INTO model_calls(id,job_id,attempt_id,purpose,provider,model,started,status,parameters,messages)
@@ -82,7 +82,7 @@ async def call_model(provider, *, purpose='grading', **kwargs):
         # Ollama uses counters at the response root.
         supplied = response.usage or {}
         usage = normalize_usage(provider.name, raw_usage, supplied)
-        _finish(store, cid, usage, status='succeeded', actual_model=(raw.get('model') if isinstance(raw, dict) else getattr(raw, 'model', None)) or response.model,
+        _finish(store, cid, usage, status='succeeded', finish_reason=response.finish_reason, actual_model=(raw.get('model') if isinstance(raw, dict) else getattr(raw, 'model', None)) or response.model,
                 request_id=raw.get('_request_id') if isinstance(raw, dict) else getattr(raw, '_request_id', None), response=redact(response.content))
         return response
 

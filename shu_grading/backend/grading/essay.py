@@ -60,8 +60,9 @@ class EssayGrader:
                 provider = self.provider_factory()
             else:
                 settings = load_settings()
+                default_budget = 16384 if settings.ai_model.lower() == 'minimax-m3.1-flash' else 6000
                 settings = replace(settings, openai_base_url=settings.openai_base_url or None,
-                                   max_tokens=int(os.getenv("SHU_WEB_MAX_TOKENS", str(max(settings.max_tokens, 6000)))))
+                                   max_tokens=int(os.getenv("SHU_WEB_MAX_TOKENS", str(max(settings.max_tokens, default_budget)))))
                 provider = create_provider(settings)
             if provider.validate_config():
                 raise GradingFailure("请管理员检查服务器模型配置")
@@ -69,6 +70,8 @@ class EssayGrader:
             rubric.description = request.assignment
             result, error = await grade_essay(list(request.image_paths), rubric, provider)
             if error or result is None:
+                if error and error.startswith(('模型输出达到上限', '模型未返回评分正文')):
+                    raise GradingFailure(error)
                 if error and error.startswith("模型客户端错误:"):
                     raise GradingFailure("模型响应处理失败，请管理员检查服务器依赖后重试")
                 detail = (error or '').lower()

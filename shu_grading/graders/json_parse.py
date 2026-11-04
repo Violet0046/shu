@@ -135,6 +135,8 @@ async def repair_to_json(raw_text: str, model_provider: Any) -> dict[str, Any] |
 
     发送给 AI 让它把非 JSON 内容转为合法 JSON。
     """
+    if not raw_text.strip():
+        return None
     from ..models.base import ChatMessage
 
     prompt = f"""以下是一段 AI 的输出,无法被解析为合法 JSON(可能是因为引号未转义、截断、或格式错误)。
@@ -153,7 +155,7 @@ async def repair_to_json(raw_text: str, model_provider: Any) -> dict[str, Any] |
 
 **原始输出**:
 ```
-{raw_text[:3000]}
+{raw_text}
 ```
 
 请只输出合法 JSON(从 {{ 开始,到 }} 结束):"""
@@ -170,7 +172,7 @@ async def repair_to_json(raw_text: str, model_provider: Any) -> dict[str, Any] |
             ],
             json_mode=True,
             temperature=0.0,
-            max_tokens=2000,
+            max_tokens=max(4096, getattr(model_provider, 'max_tokens', 6000)),
         )
         return extract_json(response.content)
     except Exception as e:

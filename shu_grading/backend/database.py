@@ -87,6 +87,8 @@ class Store:
                 input_tokens INTEGER,output_tokens INTEGER,cached_tokens INTEGER,cache_write_tokens INTEGER,
                 reasoning_tokens INTEGER,usage TEXT,parameters TEXT,messages TEXT,response TEXT)''')
             db.execute('CREATE INDEX IF NOT EXISTS model_calls_job ON model_calls(job_id,started)')
+            if 'finish_reason' not in {r['name'] for r in db.execute('PRAGMA table_info(model_calls)')}:
+                db.execute('ALTER TABLE model_calls ADD COLUMN finish_reason TEXT')
             db.execute('CREATE INDEX IF NOT EXISTS model_calls_started ON model_calls(started)')
             if 'result_version_id' not in {r['name'] for r in db.execute('PRAGMA table_info(grading_jobs)')}:
                 db.execute('ALTER TABLE grading_jobs ADD COLUMN result_version_id TEXT REFERENCES versions(id)')
@@ -121,6 +123,7 @@ class Store:
             db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(2,?)', (time.time(),))
             db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(3,?)', (time.time(),))
             db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(4,?)', (time.time(),))
+            db.execute('INSERT OR IGNORE INTO schema_migrations VALUES(5,?)', (time.time(),))
 
     @contextmanager
     def connect(self):

@@ -54,6 +54,7 @@ class ChatResponse:
     usage: dict[str, int | None] = field(default_factory=dict)
     model: str = ""
     raw: Any = None  # 原始响应,用于调试
+    finish_reason: str | None = None
 
 
 class ModelProvider(ABC):
