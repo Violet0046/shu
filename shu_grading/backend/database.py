@@ -52,6 +52,8 @@ class Store:
             if 'input_closed' not in columns:
                 db.execute('ALTER TABLE tasks ADD COLUMN input_closed INTEGER NOT NULL DEFAULT 0')
             submission_columns = {r['name'] for r in db.execute('PRAGMA table_info(submissions)')}
+            if 'view_rotation' not in submission_columns:
+                db.execute('ALTER TABLE submissions ADD COLUMN view_rotation INTEGER NOT NULL DEFAULT 0')
             if 'original_image' not in submission_columns:
                 db.execute('ALTER TABLE submissions ADD COLUMN original_image TEXT')
             db.executescript("""

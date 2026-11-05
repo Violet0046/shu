@@ -244,3 +244,8 @@ body.viewing-image { overflow:hidden; }
 .uncertain-char { color:#c62828; background:#fff0f0; font-weight:700; border-radius:3px; padding:0 2px; }
 
 #viewer-retry { position:absolute; z-index:3; bottom:24px; left:50%; transform:translateX(-50%); background:white; color:var(--blue); border:1px solid var(--line); box-shadow:0 4px 20px #15253a22; }
+
+.rotation-actions { display:inline-flex; gap:6px; margin-left:auto; }
+.paper-hint { display:flex; align-items:center; gap:12px; }
+.rotation-actions button { padding:2px 12px; font-size:24px; line-height:1.2; }
+.original-image-button { overflow:hidden; }

@@ -40,3 +40,22 @@ def test_preview_and_original_have_distinct_validated_caches(web):
         assert stranger.get(url+'?preview=true',headers={'If-None-Match':preview.headers['etag']}).status_code==404
         assert stranger.get(url+'?reading=true').status_code==404
     assert client.get('/api/tasks/'+tid).headers['cache-control']=='no-store'
+
+
+def test_view_rotation_is_persistent_and_does_not_change_grading(web):
+    client,app,model=web
+    tid=task(client);sid=submit(client,tid)
+    before=dict(app.state.services.submissions.get(app.state.store.one('SELECT owner FROM tasks WHERE id=?',(tid,))['owner'],sid))
+    url=f'/api/submissions/{sid}/rotation'
+    for angle in (90,180,270,0,90):
+        assert client.put(url,json={'angle':angle}).status_code==200
+        assert client.get('/api/tasks/'+tid).json()['submissions'][0]['view_rotation']==angle
+    assert client.put(url,json={'angle':45}).status_code==422
+    after=app.state.store.one('SELECT * FROM submissions WHERE id=?',(sid,))
+    for key in ('image','original_image','ai_result','final_result','confirmed','revision','status'):
+        assert before[key]==after[key]
+    assert model.calls==[]
+    with TestClient(app) as stranger:
+        app.state.services.auth.create_account('other-rotation','password-123')
+        stranger.post('/api/login',json={'username':'other-rotation','password':'password-123'})
+        assert stranger.put(url,json={'angle':180}).status_code==404

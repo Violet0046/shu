@@ -129,7 +129,7 @@ def main(output: Path):
                 assert page.locator('.directory-item .tag.review').count() == 1
                 assert page.locator('.sticky-actions button').all_text_contents() == ['确认完成','AI 重审']
                 assert '含标点，不含标题' in page.locator('.paper-toolbar .word-count').inner_text()
-                assert page.locator('.paper-hint').inner_text() == '转写不润色、不自动纠错；［疑字］请核对原图'
+                assert page.locator('.paper-hint').inner_text().startswith('转写不润色、不自动纠错；［疑字］请核对原图')
                 assert page.get_by_role('button', name='阅卷首页').count() == 0
                 page.get_by_role('button', name='账户菜单').hover()
                 assert page.locator('.account-dropdown').is_visible()
@@ -156,7 +156,15 @@ def main(output: Path):
                 page.get_by_role('button',name='原图',exact=True).click()
                 page.locator('#original-image').wait_for()
                 assert 'preview=true' in page.locator('#original-image').get_attribute('src')
-                assert page.locator('.paper-hint').inner_text() == '点击图片后，可按住 Ctrl 用滚轮缩放'
+                page.locator('[data-action="rotate-right"]').click()
+                page.wait_for_function("document.querySelector('#original-image').dataset.angle==='90'")
+                page.locator('#original-image').click()
+                page.wait_for_function("imageViewer?.angle===90 && imageViewer.width>0")
+                page.keyboard.press('Escape')
+                page.locator('[data-action="rotate-left"]').click()
+                page.wait_for_function("document.querySelector('#original-image').dataset.angle==='0'")
+
+                assert page.locator('.paper-hint').inner_text().startswith('点击图片后，可按住 Ctrl 用滚轮缩放')
                 page.screenshot(path=str(output/'web-v3-review.png'), full_page=True)
                 # Delay the reading image: preview must remain visible and zoom must survive upgrade.
                 page.wait_for_function("document.querySelector('#original-image').naturalWidth>0")

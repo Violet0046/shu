@@ -1,4 +1,10 @@
 from fastapi import APIRouter, Request
+from pydantic import BaseModel
+from typing import Literal
+
+class RotationInput(BaseModel):
+    angle: Literal[0, 90, 180, 270]
+
 from fastapi.responses import FileResponse, Response
 
 from .contracts import ReviewInput, SubmissionInput
@@ -11,6 +17,13 @@ def router(services):
     @routes.post('/tasks/{tid}/submissions')
     def submit(tid: str, body: SubmissionInput, request: Request):
         return services.submissions.submit(user(request), tid, body)
+
+    @routes.put('/submissions/{sid}/rotation')
+    def rotation(sid: str, body: RotationInput, request: Request):
+        services.submissions.get(user(request), sid)
+        with services.submissions.store.connect() as db:
+            db.execute('UPDATE submissions SET view_rotation=? WHERE id=?', (body.angle, sid))
+        return {'view_rotation': body.angle}
 
     @routes.get('/submissions/{sid}/image')
     def image(sid: str, request: Request, preview: bool=False, reading: bool=False):

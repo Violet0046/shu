@@ -8,7 +8,7 @@ from ..utils.word_count import count_essay_words
 
 
 def public_submission(row):
-    result = {k: row[k] for k in ('id','task_id','number','student_id','label','status','error','confirmed','revision')}
+    result = {k: row[k] for k in ('id','task_id','number','student_id','label','status','error','confirmed','revision','view_rotation')}
     for key in ('ai_result','final_result'):
         result[key] = json.loads(row[key]) if row[key] else None
         if result[key] is not None:
